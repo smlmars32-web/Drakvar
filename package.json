@@ -1,0 +1,24 @@
+{
+  "name": "animal-war-game",
+  "version": "1.0.0",
+  "description": "Animal War - Risk-style strategy game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "game",
+    "strategy",
+    "risk",
+    "animals"
+  ],
+  "author": "Tomas, Abe en Sven",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
