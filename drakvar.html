@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐉 Draak Vuuroorlog - Werelden Avontuur 🔥</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            transition: background 1s ease;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: transparent;
+        }
+        
+        canvas {
+            display: block;
+            cursor: crosshair;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .game-info {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-left {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .info-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .score {
+            font-size: 22px;
+            color: #fbbf24;
+        }
+        
+        .level-info {
+            font-size: 18px;
+            color: #60a5fa;
+        }
+        
+        .world-info {
+            font-size: 18px;
+            color: #a78bfa;
+            font-weight: bold;
+        }
+        
+        .health-bar {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            font-size: 20px;
+        }
+        
+        .powerup-display {
+            display: flex;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
+        .powerup-active {
+            background: rgba(16, 185, 129, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #10b981;
+        }
+        
+        .controls {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        
+        .key {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+        
+        .game-over h1 {
+            color: #ef4444;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .level-complete h1 {
+            color: #10b981;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .boss-warning h1 {
+            color: #f59e0b;
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .modal button {
+            background: #7e22ce;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .modal button:hover {
+            background: #9333ea;
+            transform: scale(1.1);
+        }
+        
+        .boss-health-bar {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 4px solid #fbbf24;
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 50px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+        
+        .boss-health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc2626, #ef4444, #f59e0b, #fbbf24);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            transition: width 0.3s ease;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        @keyframes pulse-bar {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 50px rgba(0, 0, 0, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(239, 68, 68, 1), 0 0 80px rgba(239, 68, 68, 0.5);
+            }
+        }
+        
+        .boss-health-bar.low-health {
+            animation: pulse-bar 1s infinite;
+            border-color: #ef4444;
+        }
+        
+        .boss-name {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 40px;
+            text-shadow: 2px 2px 4px black, 0 0 10px #fbbf24;
+            letter-spacing: 1px;
+        }
+        
+        .main-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .main-menu.hidden {
+            display: none;
+        }
+        
+        .menu-title {
+            font-size: 72px;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #f59e0b, 4px 4px 8px rgba(0, 0, 0, 0.5);
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #f59e0b, 4px 4px 8px rgba(0, 0, 0, 0.5); }
+            to { text-shadow: 0 0 40px #fbbf24, 4px 4px 8px rgba(0, 0, 0, 0.5); }
+        }
+        
+        .menu-subtitle {
+            font-size: 24px;
+            color: #e0e7ff;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .color-selection {
+            margin-bottom: 40px;
+        }
+        
+        .player-color-group {
+            margin-bottom: 25px;
+        }
+        
+        .player-label {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .color-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .color-button {
+            width: 50px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .color-button:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+        
+        .color-button.selected {
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px #fbbf24;
+            transform: scale(1.2);
+        }
+        
+        .menu-buttons {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .menu-button {
+            background: linear-gradient(135deg, #7e22ce, #9333ea);
+            color: white;
+            border: 3px solid #a855f7;
+            padding: 20px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(126, 34, 206, 0.5);
+        }
+        
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(126, 34, 206, 0.8);
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+        }
+        
+        .multiplayer-info {
+            display: none;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            z-index: 5;
+        }
+        
+        .multiplayer-info.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-menu" id="mainMenu">
+        <div class="menu-title">DRAKVAR</div>
+        <div class="menu-subtitle">Kies je draak kleur</div>
+        
+        <div class="color-selection">
+            <div class="player-color-group">
+                <div class="player-label">Speler 1</div>
+                <div class="color-buttons">
+                    <button class="color-button selected" style="background-color: #ef4444;" onclick="selectColor(1, '#ef4444', '#dc2626', '#f87171')"></button>
+                    <button class="color-button" style="background-color: #3b82f6;" onclick="selectColor(1, '#3b82f6', '#1e40af', '#60a5fa')"></button>
+                    <button class="color-button" style="background-color: #10b981;" onclick="selectColor(1, '#10b981', '#047857', '#34d399')"></button>
+                    <button class="color-button" style="background-color: #f59e0b;" onclick="selectColor(1, '#f59e0b', '#d97706', '#fbbf24')"></button>
+                    <button class="color-button" style="background-color: #8b5cf6;" onclick="selectColor(1, '#8b5cf6', '#6d28d9', '#a78bfa')"></button>
+                    <button class="color-button" style="background-color: #ec4899;" onclick="selectColor(1, '#ec4899', '#be185d', '#f472b6')"></button>
+                </div>
+            </div>
+            
+            <div class="player-color-group" id="player2ColorGroup">
+                <div class="player-label">Speler 2</div>
+                <div class="color-buttons">
+                    <button class="color-button" style="background-color: #ef4444;" onclick="selectColor(2, '#ef4444', '#dc2626', '#f87171')"></button>
+                    <button class="color-button selected" style="background-color: #3b82f6;" onclick="selectColor(2, '#3b82f6', '#1e40af', '#60a5fa')"></button>
+                    <button class="color-button" style="background-color: #10b981;" onclick="selectColor(2, '#10b981', '#047857', '#34d399')"></button>
+                    <button class="color-button" style="background-color: #f59e0b;" onclick="selectColor(2, '#f59e0b', '#d97706', '#fbbf24')"></button>
+                    <button class="color-button" style="background-color: #8b5cf6;" onclick="selectColor(2, '#8b5cf6', '#6d28d9', '#a78bfa')"></button>
+                    <button class="color-button" style="background-color: #ec4899;" onclick="selectColor(2, '#ec4899', '#be185d', '#f472b6')"></button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="menu-subtitle">Kies je game mode</div>
+        <div class="menu-buttons">
+            <button class="menu-button" onclick="startGame('single')">👤 Singleplayer</button>
+            <button class="menu-button" onclick="startGame('multi')">👥 Multiplayer</button>
+        </div>
+    </div>
+    
+    <div class="game-container">
+        <div class="multiplayer-info" id="multiplayerInfo">
+            <div><strong>Speler 1 (Rood)</strong> - WASD + SHIFT | <strong>Speler 2 (Blauw)</strong> - Pijltjes + SPATIE</div>
+        </div>
+        <div class="game-info">
+            <div class="info-left">
+                <div class="score">💰 <span id="scoreValue">0</span></div>
+                <div class="world-info"><span id="worldName">🌍 Aarde</span></div>
+                <div class="level-info">⭐ Level <span id="levelValue">1</span></div>
+            </div>
+            <div class="info-right">
+                <div class="health-bar">
+                    ❤️ <span id="healthValue">5</span>
+                </div>
+                <div class="powerup-display" id="powerupDisplay"></div>
+            </div>
+        </div>
+        
+        <div class="boss-health-bar" id="bossHealthBar">
+            <div class="boss-health-fill" id="bossHealthFill"></div>
+            <div class="boss-name" id="bossName">BOSS</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="controls" id="controls">
+            <p>🎮 Bestuur: <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> | 🔥 Vuur: <span class="key">SPATIE</span> | 💎 Pak powerups op!</p>
+        </div>
+    </div>
+    
+    <div class="modal game-over" id="gameOver">
+        <h1>GAME OVER! 💀</h1>
+        <p style="font-size: 24px; margin: 20px 0;">Score: <span id="finalScore">0</span></p>
+        <p style="font-size: 18px;">Level <span id="finalLevel">1</span> - <span id="finalWorld">Aarde</span></p>
+        <button onclick="restartGame()">🔄 Speel Opnieuw</button>
+    </div>
+    
+    <div class="modal level-complete" id="levelComplete">
+        <h1>LEVEL GEHAALD! 🎉</h1>
+        <p style="font-size: 20px; margin: 20px 0;">Je hebt Level <span id="completedLevel">1</span> voltooid!</p>
+        <button onclick="nextLevel()">➡️ Volgende Level</button>
+    </div>
+    
+    <div class="modal boss-warning" id="bossWarning">
+        <h1>⚠️ BOSS GEVECHT! ⚠️</h1>
+        <p style="font-size: 24px; margin: 20px 0;">Bereid je voor...</p>
+        <p style="font-size: 18px;" id="bossIntroText">De eindbaas komt eraan!</p>
+        <button onclick="startBossFight()">⚔️ GEVECHT!</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Stel initiële canvas grootte in
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 120;
+        
+        // Game mode
+        let gameMode = 'single'; // 'single' of 'multi'
+        let gameStarted = false;
+        
+        // Maak canvas fullscreen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 120; // Minus ruimte voor UI
+            
+            // Herpositioneer draken als die buiten beeld zijn
+            if (typeof dragon !== 'undefined') {
+                if (dragon.x < dragon.width / 2) {
+                    dragon.x = dragon.width / 2 + 5;
+                }
+                if (dragon.x > canvas.width - dragon.width / 2) {
+                    dragon.x = canvas.width - dragon.width / 2 - 5;
+                }
+                if (dragon.y > canvas.height - dragon.height / 2) {
+                    dragon.y = canvas.height / 2;
+                }
+                if (dragon.y < dragon.height / 2) {
+                    dragon.y = dragon.height / 2 + 5;
+                }
+            }
+            
+            if (typeof dragon2 !== 'undefined' && gameMode === 'multi') {
+                if (dragon2.x < dragon2.width / 2) {
+                    dragon2.x = dragon2.width / 2 + 5;
+                }
+                if (dragon2.x > canvas.width - dragon2.width / 2) {
+                    dragon2.x = canvas.width - dragon2.width / 2 - 5;
+                }
+                if (dragon2.y > canvas.height - dragon2.height / 2) {
+                    dragon2.y = canvas.height / 2;
+                }
+                if (dragon2.y < dragon2.height / 2) {
+                    dragon2.y = dragon2.height / 2 + 5;
+                }
+            }
+            
+            // Regenereer sterren voor nieuwe schermgrootte
+            if (typeof initStars === 'function') {
+                initStars();
+            }
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // UI Elements
+        const scoreElement = document.getElementById('scoreValue');
+        const healthElement = document.getElementById('healthValue');
+        const levelElement = document.getElementById('levelValue');
+        const worldElement = document.getElementById('worldName');
+        const powerupDisplayElement = document.getElementById('powerupDisplay');
+        const bossHealthBarElement = document.getElementById('bossHealthBar');
+        const bossHealthFillElement = document.getElementById('bossHealthFill');
+        const bossNameElement = document.getElementById('bossName');
+        
+        // Modals
+        const gameOverElement = document.getElementById('gameOver');
+        const levelCompleteElement = document.getElementById('levelComplete');
+        const bossWarningElement = document.getElementById('bossWarning');
+
+        // Wereld configuraties
+        const WORLDS = {
+            aarde: {
+                name: '🌍 Aarde',
+                bgGradient: ['#0f172a', '#1e293b', '#2d1b4e'],
+                bodyBg: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)',
+                starColor: 'white',
+                bossName: '👑 Aarde Draak Koning',
+                levels: 3
+            },
+            pluto: {
+                name: '🪐 Pluto',
+                bgGradient: ['#1a0b2e', '#2d1b4e', '#3d1e5e'],
+                bodyBg: 'linear-gradient(135deg, #2d1b4e 0%, #3d1e5e 50%, #1a0b2e 100%)',
+                starColor: '#e0e7ff',
+                bossName: '❄️ IJzige Pluto Demon',
+                levels: 3
+            },
+            mars: {
+                name: '🔴 Mars',
+                bgGradient: ['#7f1d1d', '#991b1b', '#450a0a'],
+                bodyBg: 'linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #450a0a 100%)',
+                starColor: '#fecaca',
+                bossName: '🔥 Mars Vuur Titan',
+                levels: 3
+            },
+            jupiter: {
+                name: '🟠 Jupiter',
+                bgGradient: ['#78350f', '#92400e', '#451a03'],
+                bodyBg: 'linear-gradient(135deg, #92400e 0%, #78350f 50%, #ea580c 100%)',
+                starColor: '#fed7aa',
+                bossName: '⚡ Jupiter Storm Heerser',
+                levels: 3
+            }
+        };
+
+        const WORLD_ORDER = ['aarde', 'pluto', 'mars', 'jupiter'];
+
+        // Game state
+        let gameRunning = true;
+        let gamePaused = false;
+        let score = 0;
+        let health = 5;
+        let maxHealth = 5;
+        let frame = 0;
+        let currentWorldIndex = 0;
+        let currentLevel = 1;
+        let currentWorld = WORLD_ORDER[currentWorldIndex];
+        let monstersKilled = 0;
+        let monstersNeededForLevel = 10;
+        let isBossLevel = false;
+        let bossActive = false;
+
+        // Keys pressed
+        const keys = {};
+        
+        // Player color selections with projectile types
+        let player1Color = { main: '#ef4444', dark: '#dc2626', light: '#f87171', projectileType: 'fireball' };
+        let player2Color = { main: '#3b82f6', dark: '#1e40af', light: '#60a5fa', projectileType: 'ice' };
+        
+        // Projectile type mapping
+        function getProjectileType(colorMain) {
+            const projectileMap = {
+                '#ef4444': 'fireball',  // Rood = vuurballen
+                '#3b82f6': 'ice',       // Blauw = ijsballen
+                '#10b981': 'poison',    // Groen = gif gas
+                '#f59e0b': 'laser',     // Geel = lasers
+                '#8b5cf6': 'energy',    // Paars = energie bollen
+                '#ec4899': 'plasma'     // Roze = plasma
+            };
+            return projectileMap[colorMain] || 'fireball';
+        }
+        
+        // Dragon (speler 1)
+        const dragon = {
+            x: 100,
+            y: canvas.height / 2,
+            width: 60,
+            height: 40,
+            speed: 5,
+            color: '#ef4444',
+            shield: false,
+            shieldTime: 0
+        };
+        
+        // Dragon 2 (speler 2 - alleen multiplayer)
+        const dragon2 = {
+            x: canvas.width - 150,
+            y: canvas.height / 2,
+            width: 60,
+            height: 40,
+            speed: 5,
+            color: '#3b82f6',
+            shield: false,
+            shieldTime: 0
+        };
+        
+        // Color selection function
+        function selectColor(player, mainColor, darkColor, lightColor) {
+            const projectileType = getProjectileType(mainColor);
+            if (player === 1) {
+                player1Color = { main: mainColor, dark: darkColor, light: lightColor, projectileType: projectileType };
+                // Update all player 1 color buttons
+                document.querySelectorAll('.player-color-group:nth-of-type(1) .color-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                event.target.classList.add('selected');
+            } else {
+                player2Color = { main: mainColor, dark: darkColor, light: lightColor, projectileType: projectileType };
+                // Update all player 2 color buttons
+                document.querySelectorAll('.player-color-group:nth-of-type(2) .color-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                event.target.classList.add('selected');
+            }
+        }
+        
+        let health2 = 5;
+
+        // Powerups
+        const powerups = [];
+        const POWERUP_TYPES = {
+            health: { emoji: '❤️', color: '#ef4444', effect: 'heal' },
+            shield: { emoji: '🛡️', color: '#3b82f6', effect: 'shield' },
+            rapid: { emoji: '⚡', color: '#eab308', effect: 'rapid' },
+            damage: { emoji: '💥', color: '#f97316', effect: 'damage' }
+        };
+
+        let activePowerups = {
+            shield: 0,
+            rapid: 0,
+            damage: 0
+        };
+
+        // Vuurballen
+        const fireballs = [];
+        const fireballs2 = []; // Speler 2 fireballs
+        let fireballSpeed = 8;
+        let fireballDamage = 1;
+        let canShoot = true;
+        let shootCooldown = 0;
+        let shootCooldownMax = 15;
+        let canShoot2 = true;
+        let shootCooldown2 = 0;
+
+        // Monsters
+        const monsters = [];
+        let monsterSpawnRate = 90;
+        let currentBoss = null;
+        
+        // Enemy projectiles
+        const enemyProjectiles = [];
+        
+        // Obstakels (multiplayer)
+        const obstacles = [];
+        let obstacleTimer = 0;
+        let nextObstacleSpawn = 120; // 2 seconden bij 60fps
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            // Speler 1 schiet (SHIFT in multiplayer, SPATIE in singleplayer)
+            if (gameMode === 'multi' && e.key === 'Shift' && canShoot && gameRunning && !gamePaused) {
+                shootFireball();
+                e.preventDefault();
+            } else if (gameMode === 'single' && e.key === ' ' && canShoot && gameRunning && !gamePaused) {
+                shootFireball();
+                e.preventDefault();
+            }
+            
+            // Speler 2 schiet (SPATIE in multiplayer)
+            if (gameMode === 'multi' && e.key === ' ' && canShoot2 && gameRunning && !gamePaused) {
+                shootFireball2();
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Update canvas achtergrond
+        function updateWorldTheme() {
+            const world = WORLDS[currentWorld];
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, world.bgGradient[0]);
+            gradient.addColorStop(0.5, world.bgGradient[1]);
+            gradient.addColorStop(1, world.bgGradient[2]);
+            
+            document.body.style.background = world.bodyBg;
+            worldElement.textContent = world.name;
+            
+            return gradient;
+        }
+
+        // Draak tekenen
+        function drawDragon(dragonObj, facingLeft = false) {
+            // Bepaal kleur op basis van welke draak
+            const colorScheme = (dragonObj === dragon) ? player1Color : player2Color;
+            
+            // Shield effect
+            if (dragonObj.shield) {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(dragonObj.x, dragonObj.y, dragonObj.width / 2 + 10, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#60a5fa';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(dragonObj.x, dragonObj.y, dragonObj.width / 2 + 15, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            const dir = facingLeft ? -1 : 1;
+            
+            // Draak lichaam
+            ctx.fillStyle = colorScheme.main;
+            ctx.beginPath();
+            ctx.ellipse(dragonObj.x, dragonObj.y, dragonObj.width / 2, dragonObj.height / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draak kop (aanpassend aan richting)
+            ctx.fillStyle = colorScheme.dark;
+            ctx.beginPath();
+            ctx.ellipse(dragonObj.x + (dragonObj.width / 2 * dir), dragonObj.y, 25, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Oog
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(dragonObj.x + ((dragonObj.width / 2 + 5) * dir), dragonObj.y - 5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(dragonObj.x + ((dragonObj.width / 2 + 6) * dir), dragonObj.y - 5, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Vleugels (animatie)
+            const wingFlap = Math.sin(frame * 0.2) * 10;
+            ctx.fillStyle = colorScheme.light;
+            ctx.beginPath();
+            ctx.moveTo(dragonObj.x - (10 * dir), dragonObj.y);
+            ctx.lineTo(dragonObj.x - (30 * dir), dragonObj.y - 20 + wingFlap);
+            ctx.lineTo(dragonObj.x - (20 * dir), dragonObj.y);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(dragonObj.x - (10 * dir), dragonObj.y);
+            ctx.lineTo(dragonObj.x - (30 * dir), dragonObj.y + 20 - wingFlap);
+            ctx.lineTo(dragonObj.x - (20 * dir), dragonObj.y);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Staart
+            ctx.strokeStyle = colorScheme.dark;
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(dragonObj.x - (dragonObj.width / 2 * dir), dragonObj.y);
+            const tailWave = Math.sin(frame * 0.3) * 15;
+            ctx.quadraticCurveTo(
+                dragonObj.x - (dragonObj.width * dir), 
+                dragonObj.y + tailWave, 
+                dragonObj.x - ((dragonObj.width + 20) * dir), 
+                dragonObj.y + tailWave / 2
+            );
+            ctx.stroke();
+        }
+
+        // Draw health bar above dragon
+        function drawDragonHealthBar(dragonObj, currentHealth, maxHealth, color) {
+            const barWidth = 80;
+            const barHeight = 8;
+            const barX = dragonObj.x - barWidth / 2;
+            const barY = dragonObj.y - dragonObj.height / 2 - 25;
+            
+            // Background (zwart)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Health bar (kleur op basis van speler)
+            const healthPercent = currentHealth / maxHealth;
+            ctx.fillStyle = color;
+            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            
+            // Border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(barX, barY, barWidth, barHeight);
+            
+            // Health text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${currentHealth}/${maxHealth}`, dragonObj.x, barY - 5);
+        }
+        
+        // Spawn obstakel (multiplayer)
+        function spawnObstacle() {
+            const obstacleWidth = 40;
+            const obstacleHeight = 300;
+            const centerX = canvas.width / 2;
+            const gapSize = 150; // Opening in het midden
+            
+            obstacles.push({
+                x: centerX - obstacleWidth / 2,
+                y: -obstacleHeight,
+                width: obstacleWidth,
+                height: obstacleHeight,
+                speed: 3
+            });
+        }
+        
+        // Teken obstakel
+        function drawObstacle(obstacle) {
+            // Balk met gradient
+            const gradient = ctx.createLinearGradient(obstacle.x, obstacle.y, obstacle.x + obstacle.width, obstacle.y);
+            gradient.addColorStop(0, '#6b7280');
+            gradient.addColorStop(0.5, '#9ca3af');
+            gradient.addColorStop(1, '#6b7280');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            
+            // Border
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            
+            // Details (schroeven)
+            ctx.fillStyle = '#1f2937';
+            for (let i = 0; i < 5; i++) {
+                const y = obstacle.y + 20 + i * 60;
+                ctx.beginPath();
+                ctx.arc(obstacle.x + 10, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(obstacle.x + obstacle.width - 10, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Start game function
+        function startGame(mode) {
+            gameMode = mode;
+            gameStarted = true;
+            gameRunning = true;
+            document.getElementById('mainMenu').classList.add('hidden');
+            
+            // Apply selected colors to dragons
+            dragon.color = player1Color.main;
+            dragon2.color = player2Color.main;
+            
+            if (mode === 'multi') {
+                document.getElementById('multiplayerInfo').classList.add('show');
+                document.getElementById('controls').style.display = 'none';
+                // Reset positions
+                dragon.x = 100;
+                dragon.y = canvas.height / 2;
+                dragon2.x = canvas.width - 150;
+                dragon2.y = canvas.height / 2;
+                health = 5;
+                health2 = 5;
+                // Reset obstacles
+                obstacles.length = 0;
+                obstacleTimer = 0;
+                nextObstacleSpawn = Math.floor(Math.random() * 180) + 120; // 2-5 seconden
+            }
+            
+            gameLoop();
+        }
+        
+        // Vuurbal schieten (Speler 1)
+        function shootFireball() {
+            const offset = activePowerups.rapid > 0 ? 10 : 0;
+            fireballs.push({
+                x: dragon.x + dragon.width / 2 + 20,
+                y: dragon.y - offset,
+                size: 15,
+                speed: fireballSpeed,
+                damage: fireballDamage,
+                type: player1Color.projectileType
+            });
+            
+            if (activePowerups.rapid > 0) {
+                fireballs.push({
+                    x: dragon.x + dragon.width / 2 + 20,
+                    y: dragon.y + offset,
+                    size: 15,
+                    speed: fireballSpeed,
+                    damage: fireballDamage,
+                    type: player1Color.projectileType
+                });
+            }
+            
+            canShoot = false;
+            shootCooldown = activePowerups.rapid > 0 ? shootCooldownMax / 3 : shootCooldownMax;
+        }
+        
+        // Vuurbal schieten (Speler 2)
+        function shootFireball2() {
+            fireballs2.push({
+                x: dragon2.x - dragon2.width / 2 - 20,
+                y: dragon2.y,
+                size: 15,
+                speed: -fireballSpeed,
+                damage: fireballDamage,
+                type: player2Color.projectileType
+            });
+            
+            canShoot2 = false;
+            shootCooldown2 = shootCooldownMax;
+        }
+
+        // Vuurbal tekenen
+        function drawFireball(fireball) {
+            const type = fireball.type || 'fireball';
+            const glowSize = activePowerups.damage > 0 ? 2 : 1.5;
+            
+            switch(type) {
+                case 'laser':
+                    // Gele laser straal
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 8;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.moveTo(fireball.x - 30, fireball.y);
+                    ctx.lineTo(fireball.x + 30, fireball.y);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(fireball.x - 30, fireball.y);
+                    ctx.lineTo(fireball.x + 30, fireball.y);
+                    ctx.stroke();
+                    break;
+                    
+                case 'ice':
+                    // Blauwe ijsbal
+                    const iceGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    iceGradient.addColorStop(0, '#bfdbfe');
+                    iceGradient.addColorStop(0.4, '#60a5fa');
+                    iceGradient.addColorStop(0.7, '#3b82f6');
+                    iceGradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                    
+                    ctx.fillStyle = iceGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#dbeafe';
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Ijskristallen effect
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI * 2 / 6) * i + frame * 0.05;
+                        ctx.strokeStyle = '#bfdbfe';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(fireball.x, fireball.y);
+                        ctx.lineTo(
+                            fireball.x + Math.cos(angle) * fireball.size,
+                            fireball.y + Math.sin(angle) * fireball.size
+                        );
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'poison':
+                    // Groen gifgas
+                    const poisonGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * 2
+                    );
+                    poisonGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+                    poisonGradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.4)');
+                    poisonGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                    
+                    ctx.fillStyle = poisonGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Gas wolken
+                    for (let i = 0; i < 3; i++) {
+                        const offsetX = Math.sin(frame * 0.1 + i) * 10;
+                        const offsetY = Math.cos(frame * 0.1 + i) * 10;
+                        ctx.fillStyle = `rgba(52, 211, 153, ${0.3 - i * 0.1})`;
+                        ctx.beginPath();
+                        ctx.arc(fireball.x + offsetX, fireball.y + offsetY, fireball.size * 0.8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'energy':
+                    // Paarse energie bol
+                    const energyGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    energyGradient.addColorStop(0, '#e9d5ff');
+                    energyGradient.addColorStop(0.4, '#a78bfa');
+                    energyGradient.addColorStop(0.7, '#8b5cf6');
+                    energyGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                    
+                    ctx.fillStyle = energyGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Elektrische bliksem
+                    ctx.strokeStyle = '#ddd6fe';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (Math.PI * 2 / 4) * i + frame * 0.1;
+                        ctx.beginPath();
+                        ctx.moveTo(fireball.x, fireball.y);
+                        ctx.lineTo(
+                            fireball.x + Math.cos(angle) * fireball.size * 1.5,
+                            fireball.y + Math.sin(angle) * fireball.size * 1.5
+                        );
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'plasma':
+                    // Roze plasma
+                    const plasmaGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    plasmaGradient.addColorStop(0, '#fce7f3');
+                    plasmaGradient.addColorStop(0.4, '#f472b6');
+                    plasmaGradient.addColorStop(0.7, '#ec4899');
+                    plasmaGradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
+                    
+                    ctx.fillStyle = plasmaGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Plasma ring
+                    ctx.strokeStyle = '#fbcfe8';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * 1.2, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+                    
+                default:
+                    // Normale vuurbal (rood/oranje)
+                    const fireGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    fireGradient.addColorStop(0, '#fbbf24');
+                    fireGradient.addColorStop(0.4, '#f59e0b');
+                    fireGradient.addColorStop(0.7, '#ef4444');
+                    fireGradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                    
+                    ctx.fillStyle = fireGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fde047';
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillStyle = `rgba(251, 146, 60, ${0.5 - i * 0.15})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x - (i + 1) * 8, 
+                            fireball.y + Math.sin((frame + i * 10) * 0.3) * 5, 
+                            fireball.size * (1 - i * 0.2), 
+                            0, 
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    break;
+            }
+        }
+
+        // Powerup spawnen
+        function spawnPowerup(x, y) {
+            const types = Object.keys(POWERUP_TYPES);
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            powerups.push({
+                type: type,
+                x: x,
+                y: y,
+                size: 25,
+                lifetime: 300,
+                float: 0
+            });
+        }
+
+        // Powerup tekenen
+        function drawPowerup(powerup) {
+            const config = POWERUP_TYPES[powerup.type];
+            powerup.float += 0.05;
+            const floatY = Math.sin(powerup.float) * 5;
+            
+            // Glow
+            const gradient = ctx.createRadialGradient(
+                powerup.x, powerup.y + floatY, 0,
+                powerup.x, powerup.y + floatY, powerup.size * 1.5
+            );
+            gradient.addColorStop(0, config.color);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(powerup.x, powerup.y + floatY, powerup.size * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cirkel
+            ctx.fillStyle = config.color;
+            ctx.beginPath();
+            ctx.arc(powerup.x, powerup.y + floatY, powerup.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Emoji
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(config.emoji, powerup.x, powerup.y + floatY);
+        }
+
+        // Powerup oppakken
+        function collectPowerup(powerup) {
+            const config = POWERUP_TYPES[powerup.type];
+            
+            switch(config.effect) {
+                case 'heal':
+                    health = Math.min(maxHealth, health + 1);
+                    healthElement.textContent = health;
+                    break;
+                case 'shield':
+                    dragon.shield = true;
+                    activePowerups.shield = 300;
+                    break;
+                case 'rapid':
+                    activePowerups.rapid = 300;
+                    break;
+                case 'damage':
+                    activePowerups.damage = 300;
+                    fireballDamage = 2;
+                    break;
+            }
+            
+            updatePowerupDisplay();
+        }
+
+        // Update powerup display
+        function updatePowerupDisplay() {
+            powerupDisplayElement.innerHTML = '';
+            
+            if (activePowerups.shield > 0) {
+                powerupDisplayElement.innerHTML += '<div class="powerup-active">🛡️ Shield</div>';
+            }
+            if (activePowerups.rapid > 0) {
+                powerupDisplayElement.innerHTML += '<div class="powerup-active">⚡ Rapid</div>';
+            }
+            if (activePowerups.damage > 0) {
+                powerupDisplayElement.innerHTML += '<div class="powerup-active">💥 2x</div>';
+            }
+        }
+
+        // Monster spawnen
+        function spawnMonster() {
+            if (bossActive) return;
+            
+            const types = ['bat', 'ghost', 'demon'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            monsters.push({
+                type: type,
+                x: canvas.width + 50,
+                y: Math.random() * (canvas.height - 100) + 50,
+                width: 50,
+                height: 50,
+                speed: 2 + Math.random() * 2 + (currentLevel * 0.3),
+                health: type === 'demon' ? 2 : 1,
+                maxHealth: type === 'demon' ? 2 : 1,
+                color: type === 'bat' ? '#8b5cf6' : type === 'ghost' ? '#6366f1' : '#dc2626',
+                shootTimer: Math.floor(Math.random() * 120) + 60,
+                canShoot: true
+            });
+        }
+        
+        // Monster schiet projectiel (alleen bat type)
+        function monsterShoot(monster) {
+            // Alleen paarse vleermuizen (bat) kunnen schieten
+            if (!monster.canShoot || monster.type !== 'bat') return;
+            
+            enemyProjectiles.push({
+                x: monster.x - 20,
+                y: monster.y,
+                size: 8,
+                speed: -4,
+                color: monster.color,
+                damage: 1
+            });
+            
+            monster.canShoot = false;
+            monster.shootTimer = Math.floor(Math.random() * 120) + 90;
+        }
+        
+        // Boss schiet projectiel
+        function bossShoot(boss) {
+            // Boss schiet 3 projectielen in spread pattern
+            for (let i = -1; i <= 1; i++) {
+                enemyProjectiles.push({
+                    x: boss.x - 50,
+                    y: boss.y + (i * 30),
+                    size: 12,
+                    speed: -5,
+                    color: '#f59e0b',
+                    damage: 2
+                });
+            }
+        }
+        
+        // Enemy projectile tekenen
+        function drawEnemyProjectile(projectile) {
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                projectile.x, projectile.y, 0,
+                projectile.x, projectile.y, projectile.size * 1.5
+            );
+            gradient.addColorStop(0, projectile.color);
+            gradient.addColorStop(0.5, projectile.color + '88');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, projectile.size * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Core
+            ctx.fillStyle = projectile.color;
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, projectile.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner glow
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(projectile.x + 2, projectile.y - 2, projectile.size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Boss spawnen
+        function spawnBoss() {
+            const world = WORLDS[currentWorld];
+            const bossHealth = 20 + (currentWorldIndex * 10);
+            
+            currentBoss = {
+                type: 'boss',
+                name: world.bossName,
+                x: canvas.width - 200,
+                y: canvas.height / 2,
+                width: 120,
+                height: 100,
+                speed: 2,
+                health: bossHealth,
+                maxHealth: bossHealth,
+                phase: 1,
+                attackPattern: 0,
+                attackTimer: 0,
+                movementTimer: 0,
+                targetX: canvas.width - 200,
+                targetY: canvas.height / 2,
+                movementPattern: 0,
+                color: '#7f1d1d'
+            };
+            
+            bossActive = true;
+            bossNameElement.textContent = currentBoss.name;
+            bossHealthBarElement.style.display = 'block';
+            updateBossHealthBar();
+        }
+
+        // Update boss health bar
+        function updateBossHealthBar() {
+            if (!currentBoss) return;
+            
+            const percentage = (currentBoss.health / currentBoss.maxHealth) * 100;
+            bossHealthFillElement.style.width = percentage + '%';
+            
+            // Update boss name text met health info
+            bossNameElement.textContent = `${currentBoss.name} - ${currentBoss.health}/${currentBoss.maxHealth} HP`;
+            
+            // Voeg low-health effect toe wanneer boss onder 30% health is
+            if (percentage < 30) {
+                bossHealthBarElement.classList.add('low-health');
+            } else {
+                bossHealthBarElement.classList.remove('low-health');
+            }
+        }
+
+        // Monster tekenen
+        function drawMonster(monster) {
+            ctx.save();
+            
+            if (monster.type === 'bat') {
+                ctx.fillStyle = monster.color;
+                ctx.beginPath();
+                ctx.ellipse(monster.x, monster.y, 15, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                const wingFlap = Math.sin(frame * 0.3 + monster.x) * 15;
+                ctx.beginPath();
+                ctx.moveTo(monster.x, monster.y);
+                ctx.lineTo(monster.x - 20, monster.y - wingFlap);
+                ctx.lineTo(monster.x - 10, monster.y);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(monster.x, monster.y);
+                ctx.lineTo(monster.x + 20, monster.y - wingFlap);
+                ctx.lineTo(monster.x + 10, monster.y);
+                ctx.fill();
+                
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(monster.x - 5, monster.y - 3, 2, 0, Math.PI * 2);
+                ctx.arc(monster.x + 5, monster.y - 3, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+            } else if (monster.type === 'ghost') {
+                ctx.fillStyle = monster.color;
+                ctx.globalAlpha = 0.8;
+                
+                ctx.beginPath();
+                ctx.arc(monster.x, monster.y - 10, 20, Math.PI, 0);
+                ctx.lineTo(monster.x + 20, monster.y + 15);
+                ctx.lineTo(monster.x + 10, monster.y + 10);
+                ctx.lineTo(monster.x, monster.y + 15);
+                ctx.lineTo(monster.x - 10, monster.y + 10);
+                ctx.lineTo(monster.x - 20, monster.y + 15);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(monster.x - 7, monster.y - 5, 5, 0, Math.PI * 2);
+                ctx.arc(monster.x + 7, monster.y - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(monster.x - 7, monster.y - 5, 3, 0, Math.PI * 2);
+                ctx.arc(monster.x + 7, monster.y - 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+            } else if (monster.type === 'demon') {
+                ctx.fillStyle = monster.color;
+                
+                ctx.beginPath();
+                ctx.ellipse(monster.x, monster.y, 20, 15, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#7f1d1d';
+                ctx.beginPath();
+                ctx.moveTo(monster.x - 15, monster.y - 10);
+                ctx.lineTo(monster.x - 20, monster.y - 25);
+                ctx.lineTo(monster.x - 10, monster.y - 15);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(monster.x + 15, monster.y - 10);
+                ctx.lineTo(monster.x + 20, monster.y - 25);
+                ctx.lineTo(monster.x + 10, monster.y - 15);
+                ctx.fill();
+                
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(monster.x - 7, monster.y - 3, 4, 0, Math.PI * 2);
+                ctx.arc(monster.x + 7, monster.y - 3, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (monster.health > 0 && monster.maxHealth > 1) {
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(monster.x - 20, monster.y - 30, 40, 4);
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(monster.x - 20, monster.y - 30, 40 * (monster.health / monster.maxHealth), 4);
+                }
+            }
+            
+            ctx.restore();
+        }
+
+        // Boss tekenen
+        function drawBoss(boss) {
+            ctx.save();
+            
+            // Boss glow
+            const gradient = ctx.createRadialGradient(
+                boss.x, boss.y, 0,
+                boss.x, boss.y, boss.width
+            );
+            gradient.addColorStop(0, 'rgba(127, 29, 29, 0.3)');
+            gradient.addColorStop(1, 'rgba(127, 29, 29, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(boss.x, boss.y, boss.width, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Boss lichaam
+            ctx.fillStyle = boss.color;
+            ctx.beginPath();
+            ctx.ellipse(boss.x, boss.y, boss.width / 2, boss.height / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Boss kop
+            ctx.fillStyle = '#450a0a';
+            ctx.beginPath();
+            ctx.ellipse(boss.x, boss.y - 20, 40, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Vleugels
+            const wingFlap = Math.sin(frame * 0.15) * 20;
+            ctx.fillStyle = '#991b1b';
+            
+            // Links
+            ctx.beginPath();
+            ctx.moveTo(boss.x - 30, boss.y);
+            ctx.lineTo(boss.x - 80, boss.y - 40 + wingFlap);
+            ctx.lineTo(boss.x - 60, boss.y + 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Rechts
+            ctx.beginPath();
+            ctx.moveTo(boss.x + 30, boss.y);
+            ctx.lineTo(boss.x + 80, boss.y - 40 + wingFlap);
+            ctx.lineTo(boss.x + 60, boss.y + 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Grote horens
+            ctx.fillStyle = '#1c0606';
+            ctx.beginPath();
+            ctx.moveTo(boss.x - 25, boss.y - 40);
+            ctx.lineTo(boss.x - 35, boss.y - 70);
+            ctx.lineTo(boss.x - 15, boss.y - 50);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(boss.x + 25, boss.y - 40);
+            ctx.lineTo(boss.x + 35, boss.y - 70);
+            ctx.lineTo(boss.x + 15, boss.y - 50);
+            ctx.fill();
+            
+            // Ogen
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(boss.x - 15, boss.y - 25, 8, 0, Math.PI * 2);
+            ctx.arc(boss.x + 15, boss.y - 25, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(boss.x - 15, boss.y - 25, 4, 0, Math.PI * 2);
+            ctx.arc(boss.x + 15, boss.y - 25, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Bewegingspatroon en schieten
+            boss.attackTimer++;
+            boss.movementTimer++;
+            
+            // Bepaal bewegingspatroon op basis van health percentage
+            const healthPercent = (boss.health / boss.maxHealth) * 100;
+            
+            if (healthPercent > 66) {
+                // Fase 1: Langzame golven
+                boss.movementPattern = 0;
+            } else if (healthPercent > 33) {
+                // Fase 2: Snellere cirkelbeweging
+                boss.movementPattern = 1;
+            } else {
+                // Fase 3: Agressieve zigzag beweging
+                boss.movementPattern = 2;
+            }
+            
+            // Voer bewegingspatroon uit
+            switch(boss.movementPattern) {
+                case 0: // Golven
+                    boss.targetX = canvas.width - 200 + Math.sin(boss.movementTimer * 0.02) * 150;
+                    boss.targetY = canvas.height / 2 + Math.cos(boss.movementTimer * 0.015) * 120;
+                    break;
+                    
+                case 1: // Cirkel
+                    const radius = 150;
+                    const centerX = canvas.width - 300;
+                    const centerY = canvas.height / 2;
+                    boss.targetX = centerX + Math.cos(boss.movementTimer * 0.03) * radius;
+                    boss.targetY = centerY + Math.sin(boss.movementTimer * 0.03) * radius;
+                    break;
+                    
+                case 2: // Agressieve zigzag
+                    if (boss.movementTimer % 60 === 0) {
+                        boss.targetX = canvas.width / 2 + Math.random() * (canvas.width / 2 - 200);
+                        boss.targetY = 100 + Math.random() * (canvas.height - 200);
+                    }
+                    break;
+            }
+            
+            // Beweeg naar target positie
+            const speed = boss.movementPattern === 2 ? 0.04 : 0.03;
+            boss.x += (boss.targetX - boss.x) * speed;
+            boss.y += (boss.targetY - boss.y) * speed;
+            
+            // Zorg dat boss binnen scherm blijft
+            boss.x = Math.max(boss.width, Math.min(canvas.width - boss.width, boss.x));
+            boss.y = Math.max(boss.height, Math.min(canvas.height - boss.height, boss.y));
+            
+            // Boss schiet met verschillende frequenties per fase
+            const shootInterval = boss.movementPattern === 2 ? 60 : 90;
+            if (boss.attackTimer % shootInterval === 0) {
+                bossShoot(boss);
+            }
+            
+            if (boss.attackTimer > 360) {
+                boss.attackTimer = 0;
+            }
+            
+            ctx.restore();
+        }
+
+        // Collision detection
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        // Sterren achtergrond
+        const stars = [];
+        
+        function initStars() {
+            stars.length = 0; // Clear bestaande sterren
+            const numStars = Math.floor((canvas.width * canvas.height) / 10000); // Meer sterren voor groter scherm
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+        
+        initStars();
+
+        function drawStars() {
+            const world = WORLDS[currentWorld];
+            stars.forEach(star => {
+                ctx.fillStyle = world.starColor;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                star.x -= star.speed;
+                if (star.x < 0) {
+                    star.x = canvas.width;
+                    star.y = Math.random() * canvas.height;
+                }
+            });
+        }
+
+        // Level complete check
+        function checkLevelComplete() {
+            if (bossActive && !currentBoss) {
+                // Boss verslagen
+                monstersKilled = 0;
+                
+                if (currentLevel >= WORLDS[currentWorld].levels) {
+                    // Wereld voltooid
+                    currentWorldIndex++;
+                    if (currentWorldIndex >= WORLD_ORDER.length) {
+                        // Spel gewonnen!
+                        gameWon();
+                        return;
+                    }
+                    currentWorld = WORLD_ORDER[currentWorldIndex];
+                    currentLevel = 1;
+                } else {
+                    currentLevel++;
+                }
+                
+                isBossLevel = false;
+                bossActive = false;
+                bossHealthBarElement.style.display = 'none';
+                
+                showLevelComplete();
+            } else if (!bossActive && monstersKilled >= monstersNeededForLevel) {
+                // Normaal level voltooid
+                isBossLevel = true;
+                showBossWarning();
+            }
+        }
+
+        // Show modals
+        function showLevelComplete() {
+            gamePaused = true;
+            document.getElementById('completedLevel').textContent = currentLevel - 1;
+            levelCompleteElement.style.display = 'block';
+        }
+
+        function showBossWarning() {
+            gamePaused = true;
+            const world = WORLDS[currentWorld];
+            document.getElementById('bossIntroText').textContent = `${world.bossName} komt eraan!`;
+            bossWarningElement.style.display = 'block';
+        }
+
+        function nextLevel() {
+            levelCompleteElement.style.display = 'none';
+            levelElement.textContent = currentLevel;
+            updateWorldTheme();
+            gamePaused = false;
+        }
+
+        function startBossFight() {
+            bossWarningElement.style.display = 'none';
+            spawnBoss();
+            gamePaused = false;
+        }
+
+        function gameWon() {
+            gameRunning = false;
+            gameOverElement.querySelector('h1').textContent = '🎉 JE HEBT GEWONNEN! 🎉';
+            gameOverElement.querySelector('h1').style.color = '#10b981';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = currentLevel;
+            document.getElementById('finalWorld').textContent = WORLDS[currentWorld].name;
+            gameOverElement.style.display = 'block';
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning || !gameStarted) return;
+            
+            // Clear canvas
+            const bgGradient = updateWorldTheme();
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Achtergrond
+            drawStars();
+            
+            if (gamePaused) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            // Update draak positie (Speler 1)
+            if (gameMode === 'multi') {
+                // Multiplayer: WASD voor speler 1
+                if (keys['w']) {
+                    dragon.y = Math.max(dragon.height / 2, dragon.y - dragon.speed);
+                }
+                if (keys['s']) {
+                    dragon.y = Math.min(canvas.height - dragon.height / 2, dragon.y + dragon.speed);
+                }
+                if (keys['a']) {
+                    dragon.x = Math.max(dragon.width / 2, dragon.x - dragon.speed);
+                }
+                if (keys['d']) {
+                    dragon.x = Math.min(canvas.width - dragon.width / 2, dragon.x + dragon.speed);
+                }
+                
+                // Speler 2: Pijltjes
+                if (keys['ArrowUp']) {
+                    dragon2.y = Math.max(dragon2.height / 2, dragon2.y - dragon2.speed);
+                }
+                if (keys['ArrowDown']) {
+                    dragon2.y = Math.min(canvas.height - dragon2.height / 2, dragon2.y + dragon2.speed);
+                }
+                if (keys['ArrowLeft']) {
+                    dragon2.x = Math.max(dragon2.width / 2, dragon2.x - dragon2.speed);
+                }
+                if (keys['ArrowRight']) {
+                    dragon2.x = Math.min(canvas.width - dragon2.width / 2, dragon2.x + dragon2.speed);
+                }
+            } else {
+                // Singleplayer: beide control schemes werken
+                if (keys['ArrowUp'] || keys['w']) {
+                    dragon.y = Math.max(dragon.height / 2, dragon.y - dragon.speed);
+                }
+                if (keys['ArrowDown'] || keys['s']) {
+                    dragon.y = Math.min(canvas.height - dragon.height / 2, dragon.y + dragon.speed);
+                }
+                if (keys['ArrowLeft'] || keys['a']) {
+                    dragon.x = Math.max(dragon.width / 2, dragon.x - dragon.speed);
+                }
+                if (keys['ArrowRight'] || keys['d']) {
+                    dragon.x = Math.min(canvas.width - dragon.width / 2, dragon.x + dragon.speed);
+                }
+            }
+            
+            // Shoot cooldown
+            if (!canShoot) {
+                shootCooldown--;
+                if (shootCooldown <= 0) {
+                    canShoot = true;
+                }
+            }
+            
+            if (!canShoot2) {
+                shootCooldown2--;
+                if (shootCooldown2 <= 0) {
+                    canShoot2 = true;
+                }
+            }
+            
+            // Update powerups
+            Object.keys(activePowerups).forEach(key => {
+                if (activePowerups[key] > 0) {
+                    activePowerups[key]--;
+                    if (activePowerups[key] === 0) {
+                        if (key === 'shield') dragon.shield = false;
+                        if (key === 'damage') fireballDamage = 1;
+                        updatePowerupDisplay();
+                    }
+                }
+            });
+            
+            // Update en teken powerups
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                const powerup = powerups[i];
+                powerup.lifetime--;
+                
+                drawPowerup(powerup);
+                
+                // Check collision met draak
+                const distance = Math.sqrt(
+                    Math.pow(dragon.x - powerup.x, 2) + 
+                    Math.pow(dragon.y - powerup.y, 2)
+                );
+                
+                if (distance < dragon.width / 2 + powerup.size) {
+                    collectPowerup(powerup);
+                    powerups.splice(i, 1);
+                    continue;
+                }
+                
+                if (powerup.lifetime <= 0) {
+                    powerups.splice(i, 1);
+                }
+            }
+            
+            // Update en teken vuurballen (Speler 1)
+            for (let i = fireballs.length - 1; i >= 0; i--) {
+                fireballs[i].x += fireballs[i].speed;
+                drawFireball(fireballs[i]);
+                
+                let fireballRemoved = false;
+                
+                // Check hit on obstacles in multiplayer
+                if (gameMode === 'multi') {
+                    for (let j = obstacles.length - 1; j >= 0; j--) {
+                        const obstacle = obstacles[j];
+                        const fireballRect = {
+                            x: fireballs[i].x - fireballs[i].size,
+                            y: fireballs[i].y - fireballs[i].size,
+                            width: fireballs[i].size * 2,
+                            height: fireballs[i].size * 2
+                        };
+                        const obstacleRect = {
+                            x: obstacle.x,
+                            y: obstacle.y,
+                            width: obstacle.width,
+                            height: obstacle.height
+                        };
+                        
+                        if (checkCollision(fireballRect, obstacleRect)) {
+                            fireballs.splice(i, 1);
+                            fireballRemoved = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (fireballRemoved) continue;
+                
+                // Check hit on dragon2 in multiplayer
+                if (gameMode === 'multi') {
+                    const distance = Math.sqrt(
+                        Math.pow(dragon2.x - fireballs[i].x, 2) + 
+                        Math.pow(dragon2.y - fireballs[i].y, 2)
+                    );
+                    
+                    if (distance < dragon2.width / 2 + fireballs[i].size) {
+                        fireballs.splice(i, 1);
+                        if (!dragon2.shield) {
+                            health2--;
+                            if (health2 <= 0) {
+                                endGame('player1');
+                            }
+                        }
+                        continue;
+                    }
+                }
+                
+                if (fireballs[i] && fireballs[i].x > canvas.width) {
+                    fireballs.splice(i, 1);
+                }
+            }
+            
+            // Update en teken vuurballen (Speler 2)
+            if (gameMode === 'multi') {
+                for (let i = fireballs2.length - 1; i >= 0; i--) {
+                    fireballs2[i].x += fireballs2[i].speed;
+                    drawFireball(fireballs2[i]);
+                    
+                    let fireballRemoved = false;
+                    
+                    // Check hit on obstacles
+                    for (let j = obstacles.length - 1; j >= 0; j--) {
+                        const obstacle = obstacles[j];
+                        const fireballRect = {
+                            x: fireballs2[i].x - fireballs2[i].size,
+                            y: fireballs2[i].y - fireballs2[i].size,
+                            width: fireballs2[i].size * 2,
+                            height: fireballs2[i].size * 2
+                        };
+                        const obstacleRect = {
+                            x: obstacle.x,
+                            y: obstacle.y,
+                            width: obstacle.width,
+                            height: obstacle.height
+                        };
+                        
+                        if (checkCollision(fireballRect, obstacleRect)) {
+                            fireballs2.splice(i, 1);
+                            fireballRemoved = true;
+                            break;
+                        }
+                    }
+                    
+                    if (fireballRemoved) continue;
+                    
+                    // Check hit on dragon1
+                    const distance = Math.sqrt(
+                        Math.pow(dragon.x - fireballs2[i].x, 2) + 
+                        Math.pow(dragon.y - fireballs2[i].y, 2)
+                    );
+                    
+                    if (distance < dragon.width / 2 + fireballs2[i].size) {
+                        fireballs2.splice(i, 1);
+                        if (!dragon.shield) {
+                            health--;
+                            healthElement.textContent = health;
+                            if (health <= 0) {
+                                endGame('player2');
+                            }
+                        }
+                        continue;
+                    }
+                    
+                    if (fireballs2[i] && fireballs2[i].x < -50) {
+                        fireballs2.splice(i, 1);
+                    }
+                }
+                
+                // Spawn en update obstakels (multiplayer)
+                obstacleTimer++;
+                if (obstacleTimer >= nextObstacleSpawn) {
+                    spawnObstacle();
+                    obstacleTimer = 0;
+                    // Volgende spawn tussen 2-5 seconden (120-300 frames bij 60fps)
+                    nextObstacleSpawn = Math.floor(Math.random() * 180) + 120;
+                }
+                
+                // Update en teken obstakels
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obstacle = obstacles[i];
+                    obstacle.y += obstacle.speed;
+                    
+                    drawObstacle(obstacle);
+                    
+                    // Check collision met beide draken
+                    const obstacleRect = {
+                        x: obstacle.x,
+                        y: obstacle.y,
+                        width: obstacle.width,
+                        height: obstacle.height
+                    };
+                    
+                    const dragonRect = {
+                        x: dragon.x - dragon.width / 2,
+                        y: dragon.y - dragon.height / 2,
+                        width: dragon.width,
+                        height: dragon.height
+                    };
+                    
+                    const dragon2Rect = {
+                        x: dragon2.x - dragon2.width / 2,
+                        y: dragon2.y - dragon2.height / 2,
+                        width: dragon2.width,
+                        height: dragon2.height
+                    };
+                    
+                    if (checkCollision(obstacleRect, dragonRect)) {
+                        health--;
+                        healthElement.textContent = health;
+                        if (health <= 0) {
+                            endGame('player2');
+                        }
+                        obstacles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    if (checkCollision(obstacleRect, dragon2Rect)) {
+                        health2--;
+                        if (health2 <= 0) {
+                            endGame('player1');
+                        }
+                        obstacles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Verwijder obstakels die buiten scherm zijn
+                    if (obstacle.y > canvas.height) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Spawn monsters (alleen in singleplayer en niet als boss actief is)
+            if (gameMode === 'single' && !bossActive && frame % monsterSpawnRate === 0) {
+                spawnMonster();
+            }
+            
+            // Update en teken enemy projectiles (alleen singleplayer)
+            if (gameMode === 'single') {
+                for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+                    const projectile = enemyProjectiles[i];
+                    projectile.x += projectile.speed;
+                    
+                    drawEnemyProjectile(projectile);
+                    
+                    // Check collision met draak
+                    const distance = Math.sqrt(
+                        Math.pow(dragon.x - projectile.x, 2) + 
+                        Math.pow(dragon.y - projectile.y, 2)
+                    );
+                    
+                    if (distance < dragon.width / 2 + projectile.size) {
+                        enemyProjectiles.splice(i, 1);
+                        
+                        if (!dragon.shield) {
+                            health -= projectile.damage;
+                            healthElement.textContent = health;
+                            
+                            canvas.style.filter = 'brightness(0.5)';
+                            setTimeout(() => {
+                                canvas.style.filter = 'brightness(1)';
+                            }, 100);
+                            
+                            if (health <= 0) {
+                                endGame();
+                            }
+                        }
+                        continue;
+                    }
+                    
+                    // Verwijder projectiles buiten scherm
+                    if (projectile.x < -50) {
+                        enemyProjectiles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Update en teken monsters (alleen singleplayer)
+            if (gameMode === 'single') {
+                for (let i = monsters.length - 1; i >= 0; i--) {
+                    const monster = monsters[i];
+                monster.x -= monster.speed;
+                
+                // Monster shoot timer
+                if (monster.shootTimer > 0) {
+                    monster.shootTimer--;
+                    if (monster.shootTimer <= 0) {
+                        monster.canShoot = true;
+                    }
+                }
+                
+                // Monster schiet als het binnen bereik is (alleen bat type)
+                if (monster.type === 'bat' && monster.canShoot && monster.x < canvas.width - 100 && monster.x > 200) {
+                    monsterShoot(monster);
+                }
+                
+                // Check botsing met vuurballen
+                for (let j = fireballs.length - 1; j >= 0; j--) {
+                    const fireball = fireballs[j];
+                    const distance = Math.sqrt(
+                        Math.pow(monster.x - fireball.x, 2) + 
+                        Math.pow(monster.y - fireball.y, 2)
+                    );
+                    
+                    if (distance < monster.width / 2 + fireball.size) {
+                        fireballs.splice(j, 1);
+                        monster.health -= fireball.damage;
+                        
+                        if (monster.health <= 0) {
+                            // Spawn powerup op monster locatie (30% kans)
+                            if (Math.random() < 0.3) {
+                                spawnPowerup(monster.x, monster.y);
+                            }
+                            
+                            monsters.splice(i, 1);
+                            monstersKilled++;
+                            score += monster.type === 'demon' ? 20 : 10;
+                            scoreElement.textContent = score;
+                            
+                            checkLevelComplete();
+                        }
+                        break;
+                    }
+                }
+                
+                // Check botsing met draak
+                if (monsters[i]) {
+                    const monsterRect = {
+                        x: monster.x - monster.width / 2,
+                        y: monster.y - monster.height / 2,
+                        width: monster.width,
+                        height: monster.height
+                    };
+                    
+                    const dragonRect = {
+                        x: dragon.x - dragon.width / 2,
+                        y: dragon.y - dragon.height / 2,
+                        width: dragon.width,
+                        height: dragon.height
+                    };
+                    
+                    if (checkCollision(monsterRect, dragonRect)) {
+                        monsters.splice(i, 1);
+                        
+                        if (!dragon.shield) {
+                            health--;
+                            healthElement.textContent = health;
+                            
+                            canvas.style.filter = 'brightness(0.5)';
+                            setTimeout(() => {
+                                canvas.style.filter = 'brightness(1)';
+                            }, 100);
+                            
+                            if (health <= 0) {
+                                endGame();
+                            }
+                        }
+                    }
+                }
+                
+                if (monsters[i]) {
+                    drawMonster(monster);
+                }
+                
+                if (monsters[i] && monster.x < -monster.width) {
+                    monsters.splice(i, 1);
+                }
+            }
+            } // Einde singleplayer monsters
+            
+            // Update en teken boss (alleen singleplayer)
+            if (gameMode === 'single' && currentBoss) {
+                // Check botsing met vuurballen
+                for (let j = fireballs.length - 1; j >= 0; j--) {
+                    const fireball = fireballs[j];
+                    const distance = Math.sqrt(
+                        Math.pow(currentBoss.x - fireball.x, 2) + 
+                        Math.pow(currentBoss.y - fireball.y, 2)
+                    );
+                    
+                    if (distance < currentBoss.width / 2 + fireball.size) {
+                        fireballs.splice(j, 1);
+                        currentBoss.health -= fireball.damage;
+                        updateBossHealthBar();
+                        
+                        if (currentBoss.health <= 0) {
+                            score += 500;
+                            scoreElement.textContent = score;
+                            
+                            // Boss spawn meerdere powerups
+                            for (let k = 0; k < 3; k++) {
+                                spawnPowerup(
+                                    currentBoss.x + (Math.random() - 0.5) * 100,
+                                    currentBoss.y + (Math.random() - 0.5) * 100
+                                );
+                            }
+                            
+                            currentBoss = null;
+                            checkLevelComplete();
+                        }
+                    }
+                }
+                
+                // Check botsing met draak
+                if (currentBoss) {
+                    const bossRect = {
+                        x: currentBoss.x - currentBoss.width / 2,
+                        y: currentBoss.y - currentBoss.height / 2,
+                        width: currentBoss.width,
+                        height: currentBoss.height
+                    };
+                    
+                    const dragonRect = {
+                        x: dragon.x - dragon.width / 2,
+                        y: dragon.y - dragon.height / 2,
+                        width: dragon.width,
+                        height: dragon.height
+                    };
+                    
+                    if (checkCollision(bossRect, dragonRect)) {
+                        if (!dragon.shield) {
+                            health -= 2;
+                            healthElement.textContent = health;
+                            
+                            canvas.style.filter = 'brightness(0.5)';
+                            setTimeout(() => {
+                                canvas.style.filter = 'brightness(1)';
+                            }, 100);
+                            
+                            if (health <= 0) {
+                                endGame();
+                            }
+                        }
+                        
+                        // Push dragon terug
+                        dragon.x = Math.max(dragon.width / 2, dragon.x - 50);
+                    }
+                    
+                    drawBoss(currentBoss);
+                }
+            }
+            
+            // Forceer draken binnen grenzen (voorkomt vastlopen)
+            dragon.x = Math.max(dragon.width / 2, Math.min(canvas.width - dragon.width / 2, dragon.x));
+            dragon.y = Math.max(dragon.height / 2, Math.min(canvas.height - dragon.height / 2, dragon.y));
+            
+            if (gameMode === 'multi') {
+                dragon2.x = Math.max(dragon2.width / 2, Math.min(canvas.width - dragon2.width / 2, dragon2.x));
+                dragon2.y = Math.max(dragon2.height / 2, Math.min(canvas.height - dragon2.height / 2, dragon2.y));
+            }
+            
+            // Teken draken
+            if (gameMode === 'multi') {
+                drawDragon(dragon, false);  // Speler 1 kijkt rechts
+                drawDragon(dragon2, true);  // Speler 2 kijkt links
+                
+                // Teken health bars boven draken
+                drawDragonHealthBar(dragon, health, maxHealth, player1Color.main);  // Speler 1 kleur
+                drawDragonHealthBar(dragon2, health2, maxHealth, player2Color.main);  // Speler 2 kleur
+            } else {
+                drawDragon(dragon, false);  // Singleplayer
+            }
+            
+            frame++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(winner = null) {
+            gameRunning = false;
+            
+            if (winner) {
+                // Multiplayer game over
+                const winnerName = winner === 'player1' ? 'Speler 1 (Rood)' : 'Speler 2 (Blauw)';
+                gameOverElement.querySelector('h1').textContent = `${winnerName} WINT! 🏆`;
+                gameOverElement.querySelector('h1').style.color = winner === 'player1' ? '#ef4444' : '#3b82f6';
+                document.getElementById('finalScore').parentElement.style.display = 'none';
+                document.getElementById('finalLevel').parentElement.style.display = 'none';
+            } else {
+                // Singleplayer game over
+                gameOverElement.querySelector('h1').textContent = 'GAME OVER! 💀';
+                gameOverElement.querySelector('h1').style.color = '#ef4444';
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('finalLevel').textContent = currentLevel;
+                document.getElementById('finalWorld').textContent = WORLDS[currentWorld].name;
+                document.getElementById('finalScore').parentElement.style.display = 'block';
+                document.getElementById('finalLevel').parentElement.style.display = 'block';
+            }
+            
+            gameOverElement.style.display = 'block';
+        }
+
+        function restartGame() {
+            // Reset alles
+            gameRunning = false;
+            gameStarted = false;
+            gamePaused = false;
+            score = 0;
+            health = maxHealth;
+            health2 = maxHealth;
+            frame = 0;
+            currentWorldIndex = 0;
+            currentLevel = 1;
+            currentWorld = WORLD_ORDER[currentWorldIndex];
+            monstersKilled = 0;
+            isBossLevel = false;
+            bossActive = false;
+            currentBoss = null;
+            
+            fireballs.length = 0;
+            fireballs2.length = 0;
+            monsters.length = 0;
+            powerups.length = 0;
+            enemyProjectiles.length = 0;
+            
+            dragon.x = 100;
+            dragon.y = canvas.height / 2;
+            dragon.shield = false;
+            
+            dragon2.x = canvas.width - 150;
+            dragon2.y = canvas.height / 2;
+            dragon2.shield = false;
+            
+            activePowerups = { shield: 0, rapid: 0, damage: 0 };
+            fireballDamage = 1;
+            
+            scoreElement.textContent = score;
+            healthElement.textContent = health;
+            levelElement.textContent = currentLevel;
+            powerupDisplayElement.innerHTML = '';
+            bossHealthBarElement.style.display = 'none';
+            
+            gameOverElement.style.display = 'none';
+            document.getElementById('multiplayerInfo').classList.remove('show');
+            
+            // Toon menu weer
+            document.getElementById('mainMenu').classList.remove('hidden');
+            
+            updateWorldTheme();
+        }
+
+        // Start game
+        updateWorldTheme();
+        initStars();
+        // gameLoop wordt nu gestart vanuit startGame() functie
+    </script>
+</body>
+</html>
