@@ -252,77 +252,141 @@
             overflow: hidden;
         }
         
-        /* Linker fakkel */
-        .main-menu::before {
-            content: '';
+        /* Fakkel containers */
+        .torch {
             position: absolute;
-            left: 50px;
             top: 50%;
             transform: translateY(-50%);
-            width: 30px;
-            height: 120px;
-            background: linear-gradient(to bottom,
+            width: 150px;
+            height: 200px;
+            z-index: 1;
+        }
+        
+        .torch-left {
+            left: 30px;
+        }
+        
+        .torch-right {
+            right: 30px;
+        }
+        
+        .torch img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+        }
+        
+        /* Vlam animatie */
+        .torch-flame {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 70px;
+            background: radial-gradient(ellipse at center,
                 #fbbf24 0%,
                 #f59e0b 30%,
                 #ea580c 60%,
-                #7c2d12 100%
+                rgba(234, 88, 12, 0) 100%
             );
-            border-radius: 50% 50% 0 0;
-            box-shadow: 
-                0 0 60px 30px rgba(251, 191, 36, 0.6),
-                0 0 100px 50px rgba(245, 158, 11, 0.4),
-                0 0 150px 75px rgba(234, 88, 12, 0.2);
-            animation: flicker 2s infinite alternate;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            filter: blur(2px);
+            animation: flame-dance 0.3s infinite alternate;
         }
         
-        /* Rechter fakkel */
-        .main-menu::after {
+        .torch-left .torch-flame {
+            animation: flame-dance 0.3s infinite alternate;
+        }
+        
+        .torch-right .torch-flame {
+            animation: flame-dance 0.3s 0.15s infinite alternate;
+        }
+        
+        /* Extra glow voor vlammen */
+        .torch-flame::before {
             content: '';
             position: absolute;
-            right: 50px;
             top: 50%;
-            transform: translateY(-50%);
-            width: 30px;
-            height: 120px;
-            background: linear-gradient(to bottom,
-                #fbbf24 0%,
-                #f59e0b 30%,
-                #ea580c 60%,
-                #7c2d12 100%
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center,
+                rgba(251, 191, 36, 0.8) 0%,
+                rgba(245, 158, 11, 0.4) 50%,
+                rgba(234, 88, 12, 0) 100%
             );
-            border-radius: 50% 50% 0 0;
-            box-shadow: 
-                0 0 60px 30px rgba(251, 191, 36, 0.6),
-                0 0 100px 50px rgba(245, 158, 11, 0.4),
-                0 0 150px 75px rgba(234, 88, 12, 0.2);
-            animation: flicker 2s 0.5s infinite alternate;
+            filter: blur(10px);
+            animation: glow-pulse 0.5s infinite alternate;
         }
         
-        @keyframes flicker {
-            0%, 100% { 
+        /* Licht effect op de muur */
+        .torch-light {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: light-flicker 2s infinite alternate;
+        }
+        
+        .torch-left .torch-light {
+            left: -50px;
+            background: radial-gradient(ellipse at center,
+                rgba(251, 191, 36, 0.3) 0%,
+                rgba(245, 158, 11, 0.15) 30%,
+                rgba(234, 88, 12, 0.05) 60%,
+                rgba(234, 88, 12, 0) 100%
+            );
+        }
+        
+        .torch-right .torch-light {
+            right: -50px;
+            background: radial-gradient(ellipse at center,
+                rgba(251, 191, 36, 0.3) 0%,
+                rgba(245, 158, 11, 0.15) 30%,
+                rgba(234, 88, 12, 0.05) 60%,
+                rgba(234, 88, 12, 0) 100%
+            );
+        }
+        
+        @keyframes flame-dance {
+            0% { 
+                transform: translateX(-50%) scaleY(1) skewX(-2deg);
                 opacity: 1;
-                transform: translateY(-50%) scaleY(1);
-                box-shadow: 
-                    0 0 60px 30px rgba(251, 191, 36, 0.6),
-                    0 0 100px 50px rgba(245, 158, 11, 0.4),
-                    0 0 150px 75px rgba(234, 88, 12, 0.2);
             }
-            25% { 
-                opacity: 0.9;
-                transform: translateY(-50%) scaleY(1.05);
-            }
-            50% { 
+            25% {
+                transform: translateX(-48%) scaleY(1.1) skewX(2deg);
                 opacity: 0.95;
-                transform: translateY(-50%) scaleY(0.98);
-                box-shadow: 
-                    0 0 70px 35px rgba(251, 191, 36, 0.7),
-                    0 0 110px 55px rgba(245, 158, 11, 0.5),
-                    0 0 160px 80px rgba(234, 88, 12, 0.3);
             }
-            75% { 
-                opacity: 0.92;
-                transform: translateY(-50%) scaleY(1.02);
+            50% {
+                transform: translateX(-52%) scaleY(0.95) skewX(-1deg);
+                opacity: 0.9;
             }
+            75% {
+                transform: translateX(-50%) scaleY(1.05) skewX(3deg);
+                opacity: 0.97;
+            }
+            100% { 
+                transform: translateX(-51%) scaleY(0.98) skewX(-2deg);
+                opacity: 0.93;
+            }
+        }
+        
+        @keyframes glow-pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes light-flicker {
+            0%, 100% { opacity: 1; }
+            25% { opacity: 0.85; }
+            50% { opacity: 0.95; }
+            75% { opacity: 0.9; }
         }
         
         .main-menu.hidden {
@@ -454,6 +518,20 @@
 </head>
 <body>
     <div class="main-menu" id="mainMenu">
+        <!-- Linker fakkel -->
+        <div class="torch torch-left">
+            <div class="torch-light"></div>
+            <img src="torch drakvar.png" alt="Torch">
+            <div class="torch-flame"></div>
+        </div>
+        
+        <!-- Rechter fakkel -->
+        <div class="torch torch-right">
+            <div class="torch-light"></div>
+            <img src="torch drakvar.png" alt="Torch">
+            <div class="torch-flame"></div>
+        </div>
+        
         <div class="menu-title"><img src="drakvar logo.png" alt="DRAKVAR"></div>
         <div class="menu-subtitle">Kies je draak kleur</div>
         
