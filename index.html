@@ -909,6 +909,11 @@
                 obstacles.length = 0;
                 obstacleTimer = 0;
                 nextObstacleSpawn = Math.floor(Math.random() * 180) + 120; // 2-5 seconden
+            } else {
+                // Reset singleplayer position
+                dragon.x = 100;
+                dragon.y = canvas.height / 2;
+                health = maxHealth;
             }
             
             gameLoop();
@@ -2388,12 +2393,19 @@
             }
             
             // Forceer draken binnen grenzen (voorkomt vastlopen)
-            dragon.x = Math.max(dragon.width / 2, Math.min(canvas.width - dragon.width / 2, dragon.x));
-            dragon.y = Math.max(dragon.height / 2, Math.min(canvas.height - dragon.height / 2, dragon.y));
-            
-            if (gameMode === 'multi') {
-                dragon2.x = Math.max(dragon2.width / 2, Math.min(canvas.width - dragon2.width / 2, dragon2.x));
-                dragon2.y = Math.max(dragon2.height / 2, Math.min(canvas.height - dragon2.height / 2, dragon2.y));
+            // Check of canvas een geldige grootte heeft
+            if (canvas.width > 100 && canvas.height > 100) {
+                if (dragon.x < dragon.width / 2) dragon.x = dragon.width / 2;
+                if (dragon.x > canvas.width - dragon.width / 2) dragon.x = canvas.width - dragon.width / 2;
+                if (dragon.y < dragon.height / 2) dragon.y = dragon.height / 2;
+                if (dragon.y > canvas.height - dragon.height / 2) dragon.y = canvas.height - dragon.height / 2;
+                
+                if (gameMode === 'multi') {
+                    if (dragon2.x < dragon2.width / 2) dragon2.x = dragon2.width / 2;
+                    if (dragon2.x > canvas.width - dragon2.width / 2) dragon2.x = canvas.width - dragon2.width / 2;
+                    if (dragon2.y < dragon2.height / 2) dragon2.y = dragon2.height / 2;
+                    if (dragon2.y > canvas.height - dragon2.height / 2) dragon2.y = canvas.height - dragon2.height / 2;
+                }
             }
             
             // Teken draken
