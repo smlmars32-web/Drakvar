@@ -2397,6 +2397,8 @@
             if (gameMode === 'single' && currentBoss) {
                 // Check botsing met vuurballen
                 for (let j = fireballs.length - 1; j >= 0; j--) {
+                    if (!currentBoss) break; // Stop loop als boss verslagen is
+                    
                     const fireball = fireballs[j];
                     const distance = Math.sqrt(
                         Math.pow(currentBoss.x - fireball.x, 2) + 
@@ -2422,6 +2424,7 @@
                             
                             currentBoss = null;
                             checkLevelComplete();
+                            break; // Stop loop na boss defeat
                         }
                     }
                 }
