@@ -2162,14 +2162,6 @@
                         if (health <= 0) {
                             endGame('player2');
                         }
-                        
-                        // Duw draak weg van obstakel
-                        if (dragon.x < obstacle.x) {
-                            dragon.x = obstacle.x - dragon.width / 2 - 10;
-                        } else {
-                            dragon.x = obstacle.x + obstacle.width + dragon.width / 2 + 10;
-                        }
-                        
                         obstacles.splice(i, 1);
                         continue;
                     }
@@ -2179,14 +2171,6 @@
                         if (health2 <= 0) {
                             endGame('player1');
                         }
-                        
-                        // Duw draak 2 weg van obstakel
-                        if (dragon2.x < obstacle.x) {
-                            dragon2.x = obstacle.x - dragon2.width / 2 - 10;
-                        } else {
-                            dragon2.x = obstacle.x + obstacle.width + dragon2.width / 2 + 10;
-                        }
-                        
                         obstacles.splice(i, 1);
                         continue;
                     }
