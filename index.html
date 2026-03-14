@@ -478,8 +478,8 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight - 120; // Minus ruimte voor UI
             
-            // Herpositioneer draken als die buiten beeld zijn
-            if (typeof dragon !== 'undefined') {
+            // Herpositioneer draken als die buiten beeld zijn (maar niet tijdens actief spel)
+            if (typeof dragon !== 'undefined' && !gameRunning) {
                 if (dragon.x < dragon.width / 2) {
                     dragon.x = dragon.width / 2 + 5;
                 }
@@ -494,7 +494,7 @@
                 }
             }
             
-            if (typeof dragon2 !== 'undefined' && gameMode === 'multi') {
+            if (typeof dragon2 !== 'undefined' && gameMode === 'multi' && !gameRunning) {
                 if (dragon2.x < dragon2.width / 2) {
                     dragon2.x = dragon2.width / 2 + 5;
                 }
@@ -2162,6 +2162,14 @@
                         if (health <= 0) {
                             endGame('player2');
                         }
+                        
+                        // Duw draak weg van obstakel
+                        if (dragon.x < obstacle.x) {
+                            dragon.x = obstacle.x - dragon.width / 2 - 10;
+                        } else {
+                            dragon.x = obstacle.x + obstacle.width + dragon.width / 2 + 10;
+                        }
+                        
                         obstacles.splice(i, 1);
                         continue;
                     }
@@ -2171,6 +2179,14 @@
                         if (health2 <= 0) {
                             endGame('player1');
                         }
+                        
+                        // Duw draak 2 weg van obstakel
+                        if (dragon2.x < obstacle.x) {
+                            dragon2.x = obstacle.x - dragon2.width / 2 - 10;
+                        } else {
+                            dragon2.x = obstacle.x + obstacle.width + dragon2.width / 2 + 10;
+                        }
+                        
                         obstacles.splice(i, 1);
                         continue;
                     }
