@@ -1871,6 +1871,13 @@
         function nextLevel() {
             levelCompleteElement.style.display = 'none';
             levelElement.textContent = currentLevel;
+            
+            // Reset arrays voor nieuw level
+            monsters.length = 0;
+            fireballs.length = 0;
+            enemyProjectiles.length = 0;
+            powerups.length = 0;
+            
             updateWorldTheme();
             gamePaused = false;
         }
