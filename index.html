@@ -376,6 +376,12 @@
                     <button class="color-button" style="background-color: #f59e0b;" onclick="selectColor(1, '#f59e0b', '#d97706', '#fbbf24')"></button>
                     <button class="color-button" style="background-color: #8b5cf6;" onclick="selectColor(1, '#8b5cf6', '#6d28d9', '#a78bfa')"></button>
                     <button class="color-button" style="background-color: #ec4899;" onclick="selectColor(1, '#ec4899', '#be185d', '#f472b6')"></button>
+                    <button class="color-button" style="background-color: #06b6d4;" onclick="selectColor(1, '#06b6d4', '#0e7490', '#22d3ee')"></button>
+                    <button class="color-button" style="background-color: #f97316;" onclick="selectColor(1, '#f97316', '#c2410c', '#fb923c')"></button>
+                    <button class="color-button" style="background-color: #1f2937;" onclick="selectColor(1, '#1f2937', '#030712', '#4b5563')"></button>
+                    <button class="color-button" style="background-color: #e5e7eb;" onclick="selectColor(1, '#e5e7eb', '#9ca3af', '#f9fafb')"></button>
+                    <button class="color-button" style="background-color: #d97706;" onclick="selectColor(1, '#d97706', '#92400e', '#fbbf24')"></button>
+                    <button class="color-button" style="background-color: #84cc16;" onclick="selectColor(1, '#84cc16', '#4d7c0f', '#bef264')"></button>
                 </div>
             </div>
             
@@ -388,6 +394,12 @@
                     <button class="color-button" style="background-color: #f59e0b;" onclick="selectColor(2, '#f59e0b', '#d97706', '#fbbf24')"></button>
                     <button class="color-button" style="background-color: #8b5cf6;" onclick="selectColor(2, '#8b5cf6', '#6d28d9', '#a78bfa')"></button>
                     <button class="color-button" style="background-color: #ec4899;" onclick="selectColor(2, '#ec4899', '#be185d', '#f472b6')"></button>
+                    <button class="color-button" style="background-color: #06b6d4;" onclick="selectColor(2, '#06b6d4', '#0e7490', '#22d3ee')"></button>
+                    <button class="color-button" style="background-color: #f97316;" onclick="selectColor(2, '#f97316', '#c2410c', '#fb923c')"></button>
+                    <button class="color-button" style="background-color: #1f2937;" onclick="selectColor(2, '#1f2937', '#030712', '#4b5563')"></button>
+                    <button class="color-button" style="background-color: #e5e7eb;" onclick="selectColor(2, '#e5e7eb', '#9ca3af', '#f9fafb')"></button>
+                    <button class="color-button" style="background-color: #d97706;" onclick="selectColor(2, '#d97706', '#92400e', '#fbbf24')"></button>
+                    <button class="color-button" style="background-color: #84cc16;" onclick="selectColor(2, '#84cc16', '#4d7c0f', '#bef264')"></button>
                 </div>
             </div>
         </div>
@@ -588,7 +600,13 @@
                 '#10b981': 'poison',    // Groen = gif gas
                 '#f59e0b': 'laser',     // Geel = lasers
                 '#8b5cf6': 'energy',    // Paars = energie bollen
-                '#ec4899': 'plasma'     // Roze = plasma
+                '#ec4899': 'plasma',    // Roze = plasma
+                '#06b6d4': 'water',     // Cyan = water
+                '#f97316': 'explosion', // Oranje = explosies
+                '#1f2937': 'shadow',    // Donkergrijs = schaduw
+                '#e5e7eb': 'light',     // Wit = licht
+                '#d97706': 'earth',     // Bruin = aarde/rotsen
+                '#84cc16': 'acid'       // Lime = zuur
             };
             return projectileMap[colorMain] || 'fireball';
         }
@@ -1079,6 +1097,192 @@
                     ctx.beginPath();
                     ctx.arc(fireball.x, fireball.y, fireball.size * 1.2, 0, Math.PI * 2);
                     ctx.stroke();
+                    break;
+                    
+                case 'water':
+                    // Cyan water golf
+                    const waterGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    waterGradient.addColorStop(0, '#cffafe');
+                    waterGradient.addColorStop(0.4, '#22d3ee');
+                    waterGradient.addColorStop(0.7, '#06b6d4');
+                    waterGradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
+                    
+                    ctx.fillStyle = waterGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Water druppels
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (frame * 0.1 + i * Math.PI / 2);
+                        ctx.fillStyle = `rgba(34, 211, 238, ${0.6 - i * 0.15})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x + Math.cos(angle) * fireball.size * 0.8,
+                            fireball.y + Math.sin(angle) * fireball.size * 0.8,
+                            fireball.size * 0.4,
+                            0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'explosion':
+                    // Oranje explosie
+                    const explosionGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize * 1.3
+                    );
+                    explosionGradient.addColorStop(0, '#fed7aa');
+                    explosionGradient.addColorStop(0.3, '#fb923c');
+                    explosionGradient.addColorStop(0.6, '#f97316');
+                    explosionGradient.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                    
+                    ctx.fillStyle = explosionGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize * 1.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Vonken
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (Math.PI * 2 / 8) * i + frame * 0.2;
+                        const distance = fireball.size * 1.5 + Math.sin(frame * 0.3 + i) * 5;
+                        ctx.fillStyle = '#fed7aa';
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x + Math.cos(angle) * distance,
+                            fireball.y + Math.sin(angle) * distance,
+                            2, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'shadow':
+                    // Donkere schaduw bol
+                    const shadowGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    shadowGradient.addColorStop(0, '#6b7280');
+                    shadowGradient.addColorStop(0.4, '#374151');
+                    shadowGradient.addColorStop(0.7, '#1f2937');
+                    shadowGradient.addColorStop(1, 'rgba(31, 41, 55, 0.7)');
+                    
+                    ctx.fillStyle = shadowGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Schaduw trail
+                    for (let i = 0; i < 4; i++) {
+                        ctx.fillStyle = `rgba(31, 41, 55, ${0.5 - i * 0.12})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x - (i + 1) * 6,
+                            fireball.y + Math.sin((frame + i * 5) * 0.2) * 3,
+                            fireball.size * 0.8,
+                            0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'light':
+                    // Wit licht straal
+                    const lightGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize * 1.5
+                    );
+                    lightGradient.addColorStop(0, '#ffffff');
+                    lightGradient.addColorStop(0.3, '#f9fafb');
+                    lightGradient.addColorStop(0.6, '#e5e7eb');
+                    lightGradient.addColorStop(1, 'rgba(229, 231, 235, 0)');
+                    
+                    ctx.fillStyle = lightGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Licht stralen
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI * 2 / 6) * i + frame * 0.15;
+                        ctx.beginPath();
+                        ctx.moveTo(fireball.x, fireball.y);
+                        ctx.lineTo(
+                            fireball.x + Math.cos(angle) * fireball.size * 2,
+                            fireball.y + Math.sin(angle) * fireball.size * 2
+                        );
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'earth':
+                    // Bruine rotsbal
+                    const earthGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    earthGradient.addColorStop(0, '#fbbf24');
+                    earthGradient.addColorStop(0.4, '#d97706');
+                    earthGradient.addColorStop(0.7, '#92400e');
+                    earthGradient.addColorStop(1, 'rgba(146, 64, 14, 0)');
+                    
+                    ctx.fillStyle = earthGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Rots textuur
+                    ctx.fillStyle = '#92400e';
+                    for (let i = 0; i < 6; i++) {
+                        const offsetX = Math.random() * fireball.size - fireball.size / 2;
+                        const offsetY = Math.random() * fireball.size - fireball.size / 2;
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x + offsetX,
+                            fireball.y + offsetY,
+                            3, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'acid':
+                    // Lime groene zuurdruppels
+                    const acidGradient = ctx.createRadialGradient(
+                        fireball.x, fireball.y, 0,
+                        fireball.x, fireball.y, fireball.size * glowSize
+                    );
+                    acidGradient.addColorStop(0, '#ecfccb');
+                    acidGradient.addColorStop(0.4, '#bef264');
+                    acidGradient.addColorStop(0.7, '#84cc16');
+                    acidGradient.addColorStop(1, 'rgba(132, 204, 22, 0)');
+                    
+                    ctx.fillStyle = acidGradient;
+                    ctx.beginPath();
+                    ctx.arc(fireball.x, fireball.y, fireball.size * glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Zuur bubbels
+                    for (let i = 0; i < 5; i++) {
+                        const bubbleSize = Math.random() * 4 + 2;
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = Math.random() * fireball.size;
+                        ctx.fillStyle = `rgba(190, 242, 100, ${0.7})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            fireball.x + Math.cos(angle) * distance,
+                            fireball.y + Math.sin(angle) * distance,
+                            bubbleSize, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
                     break;
                     
                 default:
