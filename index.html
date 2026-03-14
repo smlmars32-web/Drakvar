@@ -256,12 +256,20 @@
         }
         
         .menu-title {
-            font-size: 72px;
-            font-weight: bold;
-            color: #fbbf24;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px #f59e0b, 4px 4px 8px rgba(0, 0, 0, 0.5);
-            animation: glow 2s infinite alternate;
+        }
+        
+        .menu-title img {
+            max-width: 500px;
+            width: 90%;
+            height: auto;
+            filter: drop-shadow(0 0 20px #f59e0b) drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+            animation: logoGlow 2s infinite alternate;
+        }
+        
+        @keyframes logoGlow {
+            from { filter: drop-shadow(0 0 20px #f59e0b) drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5)); }
+            to { filter: drop-shadow(0 0 40px #fbbf24) drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5)); }
         }
         
         @keyframes glow {
@@ -364,7 +372,7 @@
 </head>
 <body>
     <div class="main-menu" id="mainMenu">
-        <div class="menu-title">DRAKVAR</div>
+        <div class="menu-title"><img src="drakvar logo.png" alt="DRAKVAR"></div>
         <div class="menu-subtitle">Kies je draak kleur</div>
         
         <div class="color-selection">
