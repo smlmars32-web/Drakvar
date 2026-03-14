@@ -569,6 +569,22 @@
         };
 
         const WORLD_ORDER = ['aarde', 'pluto', 'mars', 'jupiter'];
+        
+        // 12 unieke bosses (1 per level)
+        const BOSS_CONFIG = [
+            { name: '🌱 Groene Beschermer', color: '#22c55e', glowColor: 'rgba(34, 197, 94, 0.3)', eyeColor: '#84cc16', health: 20, size: 1.0 },
+            { name: '🌊 Oceaan Bewaker', color: '#0ea5e9', glowColor: 'rgba(14, 165, 233, 0.3)', eyeColor: '#06b6d4', health: 30, size: 1.1 },
+            { name: '⛰️ Berg Colossus', color: '#78716c', glowColor: 'rgba(120, 113, 108, 0.3)', eyeColor: '#a8a29e', health: 40, size: 1.2 },
+            { name: '🌑 Schaduw Demon', color: '#1f2937', glowColor: 'rgba(31, 41, 55, 0.4)', eyeColor: '#9333ea', health: 50, size: 1.1 },
+            { name: '❄️ Sneeuw Tiran', color: '#67e8f9', glowColor: 'rgba(103, 232, 249, 0.3)', eyeColor: '#e0f2fe', health: 60, size: 1.2 },
+            { name: '💎 Kristal Heerser', color: '#a78bfa', glowColor: 'rgba(167, 139, 250, 0.4)', eyeColor: '#ddd6fe', health: 70, size: 1.3 },
+            { name: '🔥 Vuur Lord', color: '#dc2626', glowColor: 'rgba(220, 38, 38, 0.4)', eyeColor: '#fbbf24', health: 80, size: 1.2 },
+            { name: '🌋 Magma Koning', color: '#ea580c', glowColor: 'rgba(234, 88, 12, 0.4)', eyeColor: '#facc15', health: 90, size: 1.3 },
+            { name: '💀 Dood Ridder', color: '#7c2d12', glowColor: 'rgba(124, 45, 18, 0.4)', eyeColor: '#ef4444', health: 100, size: 1.4 },
+            { name: '⚡ Storm Draak', color: '#eab308', glowColor: 'rgba(234, 179, 8, 0.4)', eyeColor: '#fef08a', health: 110, size: 1.3 },
+            { name: '🌪️ Tornado Titaan', color: '#f97316', glowColor: 'rgba(249, 115, 22, 0.4)', eyeColor: '#fcd34d', health: 120, size: 1.4 },
+            { name: '👹 ULTIEME DEMON', color: '#991b1b', glowColor: 'rgba(153, 27, 27, 0.5)', eyeColor: '#dc2626', health: 150, size: 1.5 }
+        ];
 
         // Game state
         let gameRunning = true;
@@ -584,6 +600,18 @@
         let monstersNeededForLevel = 10;
         let isBossLevel = false;
         let bossActive = false;
+        
+        // Level difficulty scaling
+        function getLevelDifficulty() {
+            const absoluteLevel = (currentWorldIndex * 3) + currentLevel; // 1-12
+            return {
+                monstersNeeded: 8 + (absoluteLevel * 2), // 10 -> 32 monsters
+                spawnRate: Math.max(40, 90 - (absoluteLevel * 4)), // 90 -> 42 frames
+                monsterSpeed: 2 + (absoluteLevel * 0.15), // 2 -> 3.8 speed
+                monsterHealth: 1 + Math.floor(absoluteLevel / 2), // 1 -> 7 health
+                bossShootRate: Math.max(80, 150 - (absoluteLevel * 6)) // 150 -> 84 frames
+            };
+        }
 
         // Keys pressed
         const keys = {};
@@ -1500,18 +1528,22 @@
         // Boss spawnen
         function spawnBoss() {
             const world = WORLDS[currentWorld];
-            const bossHealth = 20 + (currentWorldIndex * 10);
+            const absoluteLevel = (currentWorldIndex * 3) + currentLevel; // 1-12
+            const bossData = BOSS_CONFIG[absoluteLevel - 1] || BOSS_CONFIG[11]; // Default to laatste boss
+            
+            const baseWidth = 120;
+            const baseHeight = 100;
             
             currentBoss = {
                 type: 'boss',
-                name: world.bossName,
+                name: bossData.name,
                 x: canvas.width - 200,
                 y: canvas.height / 2,
-                width: 120,
-                height: 100,
-                speed: 2,
-                health: bossHealth,
-                maxHealth: bossHealth,
+                width: baseWidth * bossData.size,
+                height: baseHeight * bossData.size,
+                speed: 2 + (absoluteLevel * 0.1),
+                health: bossData.health,
+                maxHealth: bossData.health,
                 phase: 1,
                 attackPattern: 0,
                 attackTimer: 0,
@@ -1519,7 +1551,9 @@
                 targetX: canvas.width - 200,
                 targetY: canvas.height / 2,
                 movementPattern: 0,
-                color: '#7f1d1d'
+                color: bossData.color,
+                glowColor: bossData.glowColor,
+                eyeColor: bossData.eyeColor
             };
             
             bossActive = true;
@@ -1648,8 +1682,8 @@
                 boss.x, boss.y, 0,
                 boss.x, boss.y, boss.width
             );
-            gradient.addColorStop(0, 'rgba(127, 29, 29, 0.3)');
-            gradient.addColorStop(1, 'rgba(127, 29, 29, 0)');
+            gradient.addColorStop(0, boss.glowColor || 'rgba(127, 29, 29, 0.3)');
+            gradient.addColorStop(1, boss.glowColor ? boss.glowColor.replace(/[\d.]+\)$/, '0)') : 'rgba(127, 29, 29, 0)');
             ctx.fillStyle = gradient;
             ctx.beginPath();
             ctx.arc(boss.x, boss.y, boss.width, 0, Math.PI * 2);
@@ -1661,15 +1695,18 @@
             ctx.ellipse(boss.x, boss.y, boss.width / 2, boss.height / 2, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Boss kop
-            ctx.fillStyle = '#450a0a';
+            // Boss kop - donkerdere versie van body color
+            const rgb = boss.color.match(/\w\w/g).map(x => parseInt(x, 16));
+            const darkerColor = `rgb(${Math.floor(rgb[0]*0.4)}, ${Math.floor(rgb[1]*0.4)}, ${Math.floor(rgb[2]*0.4)})`;
+            ctx.fillStyle = darkerColor;
             ctx.beginPath();
             ctx.ellipse(boss.x, boss.y - 20, 40, 35, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Vleugels
+            // Vleugels - lichtere versie van body color
             const wingFlap = Math.sin(frame * 0.15) * 20;
-            ctx.fillStyle = '#991b1b';
+            const wingColor = `rgb(${Math.floor(rgb[0]*0.7)}, ${Math.floor(rgb[1]*0.7)}, ${Math.floor(rgb[2]*0.7)})`;
+            ctx.fillStyle = wingColor;
             
             // Links
             ctx.beginPath();
@@ -1687,8 +1724,8 @@
             ctx.closePath();
             ctx.fill();
             
-            // Grote horens
-            ctx.fillStyle = '#1c0606';
+            // Grote horens - zeer donker
+            ctx.fillStyle = darkerColor;
             ctx.beginPath();
             ctx.moveTo(boss.x - 25, boss.y - 40);
             ctx.lineTo(boss.x - 35, boss.y - 70);
@@ -1702,15 +1739,17 @@
             ctx.fill();
             
             // Ogen
-            ctx.fillStyle = '#fbbf24';
+            ctx.fillStyle = boss.eyeColor || '#fbbf24';
             ctx.shadowBlur = 10;
-            ctx.shadowColor = '#fbbf24';
+            ctx.shadowColor = boss.eyeColor || '#fbbf24';
             ctx.beginPath();
             ctx.arc(boss.x - 15, boss.y - 25, 8, 0, Math.PI * 2);
             ctx.arc(boss.x + 15, boss.y - 25, 8, 0, Math.PI * 2);
             ctx.fill();
             
-            ctx.fillStyle = '#ef4444';
+            const eyeRgb = (boss.eyeColor || '#fbbf24').match(/\w\w/g).map(x => parseInt(x, 16));
+            const pupilColor = `rgb(${Math.floor(eyeRgb[0]*0.5)}, ${Math.floor(eyeRgb[1]*0.5)}, ${Math.floor(eyeRgb[2]*0.5)})`;
+            ctx.fillStyle = pupilColor;
             ctx.beginPath();
             ctx.arc(boss.x - 15, boss.y - 25, 4, 0, Math.PI * 2);
             ctx.arc(boss.x + 15, boss.y - 25, 4, 0, Math.PI * 2);
@@ -1767,9 +1806,11 @@
             boss.x = Math.max(boss.width, Math.min(canvas.width - boss.width, boss.x));
             boss.y = Math.max(boss.height, Math.min(canvas.height - boss.height, boss.y));
             
-            // Boss schiet met verschillende frequenties per fase
-            const shootInterval = boss.movementPattern === 2 ? 60 : 90;
-            if (boss.attackTimer % shootInterval === 0) {
+            // Boss schiet met verschillende frequenties per fase en level difficulty
+            const difficulty = getLevelDifficulty();
+            const baseShootInterval = difficulty.bossShootRate;
+            const shootInterval = boss.movementPattern === 2 ? baseShootInterval * 0.6 : baseShootInterval;
+            if (boss.attackTimer % Math.floor(shootInterval) === 0) {
                 bossShoot(boss);
             }
             
@@ -1842,6 +1883,10 @@
                     currentLevel++;
                 }
                 
+                // Update difficulty voor nieuw level
+                const difficulty = getLevelDifficulty();
+                monstersNeededForLevel = difficulty.monstersNeeded;
+                
                 isBossLevel = false;
                 bossActive = false;
                 bossHealthBarElement.style.display = 'none';
@@ -1863,8 +1908,9 @@
 
         function showBossWarning() {
             gamePaused = true;
-            const world = WORLDS[currentWorld];
-            document.getElementById('bossIntroText').textContent = `${world.bossName} komt eraan!`;
+            const absoluteLevel = (currentWorldIndex * 3) + currentLevel;
+            const bossData = BOSS_CONFIG[absoluteLevel - 1] || BOSS_CONFIG[11];
+            document.getElementById('bossIntroText').textContent = `${bossData.name} komt eraan!`;
             bossWarningElement.style.display = 'block';
         }
 
@@ -2190,8 +2236,11 @@
             }
             
             // Spawn monsters (alleen in singleplayer en niet als boss actief is)
-            if (gameMode === 'single' && !bossActive && frame % monsterSpawnRate === 0) {
-                spawnMonster();
+            if (gameMode === 'single' && !bossActive) {
+                const difficulty = getLevelDifficulty();
+                if (frame % difficulty.spawnRate === 0) {
+                    spawnMonster();
+                }
             }
             
             // Update en teken enemy projectiles (alleen singleplayer)
@@ -2468,6 +2517,11 @@
             currentLevel = 1;
             currentWorld = WORLD_ORDER[currentWorldIndex];
             monstersKilled = 0;
+            
+            // Reset difficulty voor level 1
+            const difficulty = getLevelDifficulty();
+            monstersNeededForLevel = difficulty.monstersNeeded;
+            
             isBossLevel = false;
             bossActive = false;
             currentBoss = null;
