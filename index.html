@@ -277,19 +277,18 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            /* Verwijder zwarte achtergrond */
-            filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 20px rgba(245, 158, 11, 0.6));
-            mix-blend-mode: screen;
+            /* Maak fakkel onzichtbaar - alleen vlam blijft zichtbaar */
+            opacity: 0;
         }
         
-        /* Vlam animatie - positioneer over de fakkel vlam */
+        /* Vlam animatie - zwevende vlammen zonder fakkel */
         .torch-flame {
             position: absolute;
-            top: 3%;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            width: 85px;
-            height: 110px;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 130px;
             background: radial-gradient(ellipse at 50% 60%,
                 #fff9e6 0%,
                 #ffd700 10%,
@@ -366,35 +365,35 @@
         
         @keyframes flame-dance {
             0% { 
-                transform: translateX(-50%) scaleY(1) scaleX(1) skewX(-3deg);
+                transform: translate(-50%, -50%) scaleY(1) scaleX(1) skewX(-3deg);
                 opacity: 1;
             }
             15% {
-                transform: translateX(-48%) scaleY(1.08) scaleX(0.95) skewX(4deg);
+                transform: translate(-48%, -50%) scaleY(1.08) scaleX(0.95) skewX(4deg);
                 opacity: 0.98;
             }
             30% {
-                transform: translateX(-52%) scaleY(0.92) scaleX(1.05) skewX(-2deg);
+                transform: translate(-52%, -50%) scaleY(0.92) scaleX(1.05) skewX(-2deg);
                 opacity: 0.92;
             }
             45% {
-                transform: translateX(-49%) scaleY(1.05) scaleX(0.98) skewX(5deg);
+                transform: translate(-49%, -50%) scaleY(1.05) scaleX(0.98) skewX(5deg);
                 opacity: 0.96;
             }
             60% {
-                transform: translateX(-53%) scaleY(0.95) scaleX(1.03) skewX(-4deg);
+                transform: translate(-53%, -50%) scaleY(0.95) scaleX(1.03) skewX(-4deg);
                 opacity: 0.90;
             }
             75% {
-                transform: translateX(-50%) scaleY(1.03) scaleX(0.96) skewX(3deg);
+                transform: translate(-50%, -50%) scaleY(1.03) scaleX(0.96) skewX(3deg);
                 opacity: 0.97;
             }
             90% {
-                transform: translateX(-51%) scaleY(0.97) scaleX(1.02) skewX(-1deg);
+                transform: translate(-51%, -50%) scaleY(0.97) scaleX(1.02) skewX(-1deg);
                 opacity: 0.94;
             }
             100% { 
-                transform: translateX(-50%) scaleY(1.01) scaleX(0.99) skewX(-3deg);
+                transform: translate(-50%, -50%) scaleY(1.01) scaleX(0.99) skewX(-3deg);
                 opacity: 0.95;
             }
         }
