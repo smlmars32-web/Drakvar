@@ -445,7 +445,10 @@
         <h1>GAME OVER! 💀</h1>
         <p style="font-size: 24px; margin: 20px 0;">Score: <span id="finalScore">0</span></p>
         <p style="font-size: 18px;">Level <span id="finalLevel">1</span> - <span id="finalWorld">Aarde</span></p>
-        <button onclick="restartGame()">🔄 Speel Opnieuw</button>
+        <div id="checkpointButtons" style="display: none;">
+            <button onclick="continueFromCheckpoint()" style="background: #10b981; margin-bottom: 10px;">⏩ Ga Verder vanaf Level <span id="checkpointLevelDisplay">1</span></button>
+        </div>
+        <button onclick="restartGame()">🔄 Start vanaf Begin</button>
     </div>
     
     <div class="modal level-complete" id="levelComplete">
@@ -600,6 +603,19 @@
         let monstersNeededForLevel = 10;
         let isBossLevel = false;
         let bossActive = false;
+        let checkpointLevel = 1; // Laatste checkpoint level
+        
+        // Bepaal respawn level op basis van huidige level
+        function getCheckpointLevel(level) {
+            const absoluteLevel = (currentWorldIndex * 3) + level;
+            if (absoluteLevel <= 2) return absoluteLevel; // Level 1,2 blijven zelfde
+            if (absoluteLevel === 3 || absoluteLevel === 4) return 2; // Level 3,4 → 2
+            if (absoluteLevel === 5 || absoluteLevel === 6) return 4; // Level 5,6 → 4
+            if (absoluteLevel === 7 || absoluteLevel === 8) return 6; // Level 7,8 → 6
+            if (absoluteLevel === 9 || absoluteLevel === 10) return 8; // Level 9,10 → 8
+            if (absoluteLevel === 11 || absoluteLevel === 12) return 10; // Level 11,12 → 10
+            return 1;
+        }
         
         // Level difficulty scaling
         function getLevelDifficulty() {
@@ -2490,8 +2506,12 @@
                 gameOverElement.querySelector('h1').style.color = winner === 'player1' ? '#ef4444' : '#3b82f6';
                 document.getElementById('finalScore').parentElement.style.display = 'none';
                 document.getElementById('finalLevel').parentElement.style.display = 'none';
+                document.getElementById('checkpointButtons').style.display = 'none';
             } else {
                 // Singleplayer game over
+                const absoluteLevel = (currentWorldIndex * 3) + currentLevel;
+                checkpointLevel = getCheckpointLevel(currentLevel);
+                
                 gameOverElement.querySelector('h1').textContent = 'GAME OVER! 💀';
                 gameOverElement.querySelector('h1').style.color = '#ef4444';
                 document.getElementById('finalScore').textContent = score;
@@ -2499,13 +2519,66 @@
                 document.getElementById('finalWorld').textContent = WORLDS[currentWorld].name;
                 document.getElementById('finalScore').parentElement.style.display = 'block';
                 document.getElementById('finalLevel').parentElement.style.display = 'block';
+                
+                // Toon checkpoint knop als level > 1
+                if (checkpointLevel > 1) {
+                    document.getElementById('checkpointLevelDisplay').textContent = checkpointLevel;
+                    document.getElementById('checkpointButtons').style.display = 'block';
+                } else {
+                    document.getElementById('checkpointButtons').style.display = 'none';
+                }
             }
             
             gameOverElement.style.display = 'block';
         }
 
+        function continueFromCheckpoint() {
+            // Continue vanaf checkpoint level
+            const absoluteCheckpoint = checkpointLevel;
+            currentWorldIndex = Math.floor((absoluteCheckpoint - 1) / 3);
+            currentLevel = ((absoluteCheckpoint - 1) % 3) + 1;
+            currentWorld = WORLD_ORDER[currentWorldIndex];
+            
+            // Reset game state
+            gameRunning = true;
+            gameStarted = true;
+            gamePaused = false;
+            health = maxHealth;
+            monstersKilled = 0;
+            
+            // Reset difficulty voor checkpoint level
+            const difficulty = getLevelDifficulty();
+            monstersNeededForLevel = difficulty.monstersNeeded;
+            
+            isBossLevel = false;
+            bossActive = false;
+            currentBoss = null;
+            
+            fireballs.length = 0;
+            monsters.length = 0;
+            powerups.length = 0;
+            enemyProjectiles.length = 0;
+            
+            dragon.x = 100;
+            dragon.y = canvas.height / 2;
+            dragon.shield = false;
+            
+            activePowerups = { shield: 0, rapid: 0, damage: 0 };
+            fireballDamage = 1;
+            
+            healthElement.textContent = health;
+            levelElement.textContent = currentLevel;
+            powerupDisplayElement.innerHTML = '';
+            bossHealthBarElement.style.display = 'none';
+            
+            gameOverElement.style.display = 'none';
+            updateWorldTheme();
+            
+            gameLoop();
+        }
+        
         function restartGame() {
-            // Reset alles
+            // Reset alles - start vanaf level 1
             gameRunning = false;
             gameStarted = false;
             gamePaused = false;
@@ -2517,6 +2590,7 @@
             currentLevel = 1;
             currentWorld = WORLD_ORDER[currentWorldIndex];
             monstersKilled = 0;
+            checkpointLevel = 1;
             
             // Reset difficulty voor level 1
             const difficulty = getLevelDifficulty();
